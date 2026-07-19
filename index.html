@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="darkreader-lock">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Vampire Hunter Intern — Project Board</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0b0e;
+    --surface: #141619;
+    --surface-hover: #1c1f24;
+    --border: #252830;
+    --border-hover: #33363f;
+    --text: #e4e4e7;
+    --text-dim: #71717a;
+    --text-muted: #52525b;
+    --accent: #e11d48;
+    --tag-demo: #f43f5e; --tag-demo-bg: #f43f5e14;
+    --tag-blue: #3b82f6; --tag-blue-bg: #3b82f614;
+    --tag-green: #22c55e; --tag-green-bg: #22c55e14;
+    --tag-purple: #a855f7; --tag-purple-bg: #a855f714;
+    --tag-red: #ef4444; --tag-red-bg: #ef444414;
+    --tag-yellow: #eab308; --tag-yellow-bg: #eab30814;
+    --priority-high: #ef4444; --priority-med: #f59e0b; --priority-low: #3b82f6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: auto; }
+
+  header {
+    padding: 18px 24px 14px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; background: var(--bg); z-index: 100; flex-wrap: wrap; gap: 10px;
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo {
+    width: 10px; height: 10px; background: var(--accent); border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent), 0 0 20px #f59e0b30;
+    animation: pulse 3s ease-in-out infinite; flex-shrink: 0;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 10px var(--accent), 0 0 20px #f59e0b30; }
+    50% { box-shadow: 0 0 14px var(--accent), 0 0 28px #f59e0b50; }
+  }
+  .board-title-wrap { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+  .board-title {
+    font-size: 17px; font-weight: 600; letter-spacing: -0.02em; cursor: pointer;
+    border-bottom: 1px dashed transparent; transition: border-color 0.2s;
+  }
+  .board-title:hover { border-bottom-color: var(--text-muted); }
+  .board-subtitle {
+    font-size: 17px; font-weight: 400; color: var(--text-dim); cursor: pointer;
+    border-bottom: 1px dashed transparent; transition: border-color 0.2s;
+  }
+  .board-subtitle:hover { border-bottom-color: var(--text-muted); }
+  .inline-edit {
+    background: var(--surface); border: 1px solid var(--accent); color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 17px; padding: 2px 6px;
+    border-radius: 4px; outline: none; width: 220px;
+  }
+  .header-right { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+  .filter-btn, .action-btn {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text-dim);
+    padding: 5px 9px; border-radius: 5px; font-size: 11px;
+    font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .filter-btn:hover, .filter-btn.active { border-color: var(--accent); color: var(--text); }
+  .action-btn:hover { border-color: var(--text-dim); color: var(--text); }
+  .action-btn.active { border-color: var(--accent); color: var(--accent); }
+  .action-btn .badge {
+    background: var(--accent); color: #000; font-size: 9px; font-weight: 700;
+    padding: 1px 5px; border-radius: 8px; margin-left: 4px;
+  }
+  .hdr-sep { width: 1px; height: 18px; background: var(--border); margin: 0 3px; }
+
+  .stats {
+    display: flex; gap: 16px; padding: 8px 24px; border-bottom: 1px solid var(--border);
+    font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace;
+  }
+  .stats span { color: var(--text-dim); }
+
+  .archive-panel {
+    display: none; padding: 12px 24px 16px; border-bottom: 1px solid var(--border);
+    background: #0d0e11; max-height: 300px; overflow-y: auto;
+  }
+  .archive-panel.open { display: block; }
+  .archive-panel h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); margin-bottom: 10px; }
+  .archive-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px 12px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; justify-content: space-between;
+  }
+  .archive-card-body { flex: 1; min-width: 0; }
+  .archive-card-title { font-size: 12px; font-weight: 500; margin-bottom: 3px; }
+  .archive-card-desc { font-size: 10px; color: var(--text-dim); line-height: 1.4; }
+  .archive-card-tags { display: flex; gap: 3px; margin-top: 5px; flex-wrap: wrap; }
+  .archive-card-actions { display: flex; gap: 4px; flex-shrink: 0; }
+  .archive-btn {
+    background: var(--surface-hover); border: 1px solid var(--border); color: var(--text-dim);
+    padding: 3px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+  }
+  .archive-btn:hover { color: var(--text); border-color: var(--text-dim); }
+  .archive-btn.danger:hover { color: var(--priority-high); border-color: var(--priority-high); }
+
+  .board {
+    display: flex; gap: 12px; padding: 18px 24px;
+    min-height: calc(100vh - 110px); align-items: flex-start;
+  }
+  .column { min-width: 288px; max-width: 288px; flex-shrink: 0; }
+  .column-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 5px 4px 12px; position: sticky; top: 66px; z-index: 10;
+  }
+  .column-title {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .column-dot { width: 7px; height: 7px; border-radius: 50%; cursor: pointer; transition: transform 0.15s; }
+  .column-dot:hover { transform: scale(1.5); }
+  .color-picker-pop {
+    position: fixed; background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px; display: flex; gap: 6px; z-index: 1000;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .column-count {
+    font-size: 10px; color: var(--text-muted); font-family: 'DM Mono', monospace;
+    background: var(--surface); padding: 2px 6px; border-radius: 10px;
+  }
+  .column-del {
+    background: none; border: none; color: var(--text-muted); cursor: pointer;
+    font-size: 14px; padding: 0 4px; opacity: 0; transition: opacity 0.15s; margin-left: 4px;
+  }
+  .column-header:hover .column-del { opacity: 1; }
+  .column-del:hover { color: var(--priority-high); }
+  .column-label { cursor: pointer; border-bottom: 1px dashed transparent; transition: border-color 0.2s; }
+  .column-label:hover { border-bottom-color: var(--text-muted); }
+  .column-label-edit {
+    background: var(--surface); border: 1px solid var(--accent); color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em; padding: 1px 4px;
+    border-radius: 3px; outline: none; width: 120px;
+  }
+  .column.col-dragging { opacity: 0.4; }
+  .column-drop-zone {
+    min-width: 4px; flex-shrink: 0; border-radius: 4px; transition: all 0.15s; align-self: stretch;
+  }
+  .column-drop-zone.active { background: var(--accent); min-width: 4px; box-shadow: 0 0 8px var(--accent); }
+  .column-drag-handle {
+    cursor: grab; padding: 0 3px; color: var(--text-muted); font-size: 10px;
+    opacity: 0; transition: opacity 0.15s; user-select: none;
+  }
+  .column-header:hover .column-drag-handle { opacity: 0.7; }
+  .column-drag-handle:active { cursor: grabbing; }
+
+  .card-list {
+    display: flex; flex-direction: column; gap: 5px;
+    min-height: 60px; padding: 3px; border-radius: 7px; transition: background 0.2s;
+  }
+  .card-list.drag-over { background: #ffffff06; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    padding: 11px 12px; cursor: grab; transition: all 0.15s; position: relative;
+  }
+  .card:hover { background: var(--surface-hover); border-color: var(--border-hover); transform: translateY(-1px); box-shadow: 0 3px 10px #00000040; }
+  .card:active { cursor: grabbing; }
+  .card.dragging { opacity: 0.35; transform: scale(0.97); }
+  .drop-indicator { height: 2px; background: var(--accent); border-radius: 1px; margin: -1px 0; pointer-events: none; box-shadow: 0 0 6px var(--accent); }
+  .card-priority { position: absolute; left: 0; top: 9px; width: 3px; height: 16px; border-radius: 0 2px 2px 0; }
+  .card-actions {
+    position: absolute; top: 6px; right: 6px;
+    display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s;
+  }
+  .card:hover .card-actions { opacity: 1; }
+  .card-action-btn {
+    background: var(--bg); border: 1px solid var(--border); color: var(--text-muted);
+    width: 22px; height: 22px; border-radius: 4px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; transition: all 0.15s;
+  }
+  .card-action-btn:hover { color: var(--text); border-color: var(--text-dim); }
+  .card-action-btn.danger:hover { color: var(--priority-high); border-color: var(--priority-high); }
+  .card-title { font-size: 12px; font-weight: 500; line-height: 1.4; margin-bottom: 5px; padding-right: 48px; }
+  .card-desc { font-size: 10px; color: var(--text-dim); line-height: 1.45; margin-bottom: 7px; }
+  .card-footer { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .card-tags { display: flex; gap: 3px; flex-wrap: wrap; }
+  .tag {
+    font-size: 9px; font-weight: 500; padding: 2px 6px; border-radius: 3px;
+    letter-spacing: 0.03em; text-transform: uppercase;
+  }
+  .tag-demo { color: var(--tag-demo); background: var(--tag-demo-bg); }
+  .tag-blue { color: var(--tag-blue); background: var(--tag-blue-bg); }
+  .tag-green { color: var(--tag-green); background: var(--tag-green-bg); }
+  .tag-purple { color: var(--tag-purple); background: var(--tag-purple-bg); }
+  .tag-red { color: var(--tag-red); background: var(--tag-red-bg); }
+  .tag-yellow { color: var(--tag-yellow); background: var(--tag-yellow-bg); }
+  .phase-divider {
+    font-size: 10px; font-weight: 600; color: var(--accent);
+    padding: 9px 5px 4px; letter-spacing: 0.04em;
+    border-top: 1px solid var(--border); margin-top: 5px;
+  }
+  .phase-divider:first-child { border-top: none; margin-top: 0; }
+  .add-card-btn {
+    width: 100%; background: none; border: 1px dashed var(--border); color: var(--text-muted);
+    padding: 7px; border-radius: 6px; font-size: 11px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: all 0.15s; margin-top: 6px;
+  }
+  .add-card-btn:hover { border-color: var(--accent); color: var(--text-dim); }
+
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: #000000aa;
+    z-index: 500; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 22px 24px; width: 420px; max-width: 92vw; max-height: 85vh; overflow-y: auto;
+  }
+  .modal h2 { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+  .modal label {
+    display: block; font-size: 11px; font-weight: 500; color: var(--text-dim);
+    margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .modal input[type="text"], .modal textarea, .modal select {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    padding: 8px 10px; border-radius: 5px; font-family: 'DM Sans', sans-serif;
+    font-size: 12px; outline: none; margin-bottom: 12px; transition: border-color 0.15s;
+  }
+  .modal input:focus, .modal textarea:focus, .modal select:focus { border-color: var(--accent); }
+  .modal textarea { resize: vertical; min-height: 60px; }
+  .modal select { cursor: pointer; }
+  .modal select option { background: var(--bg); }
+  .tag-toggles { display: flex; gap: 5px; margin-bottom: 12px; flex-wrap: wrap; }
+  .tag-toggle {
+    padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 500;
+    text-transform: uppercase; cursor: pointer; border: 1px solid var(--border);
+    background: var(--bg); color: var(--text-dim); transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .tag-toggle.active { border-color: currentColor; }
+  .tag-toggle[data-tag="demo"].active { color: var(--tag-demo); background: var(--tag-demo-bg); }
+  .tag-toggle[data-tag="blue"].active { color: var(--tag-blue); background: var(--tag-blue-bg); }
+  .tag-toggle[data-tag="green"].active { color: var(--tag-green); background: var(--tag-green-bg); }
+  .tag-toggle[data-tag="purple"].active { color: var(--tag-purple); background: var(--tag-purple-bg); }
+  .tag-toggle[data-tag="red"].active { color: var(--tag-red); background: var(--tag-red-bg); }
+  .tag-toggle[data-tag="yellow"].active { color: var(--tag-yellow); background: var(--tag-yellow-bg); }
+  .color-swatches { display: flex; gap: 6px; margin-bottom: 14px; }
+  .color-swatch {
+    width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+    border: 2px solid transparent; transition: all 0.15s;
+  }
+  .color-swatch.active { border-color: var(--text); transform: scale(1.15); }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+  .modal-btn {
+    padding: 7px 16px; border-radius: 5px; font-size: 12px; font-weight: 500;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; border: none;
+  }
+  .modal-btn.primary { background: var(--accent); color: #000; }
+  .modal-btn.primary:hover { filter: brightness(1.1); }
+  .modal-btn.secondary { background: var(--bg); color: var(--text-dim); border: 1px solid var(--border); }
+  .modal-btn.secondary:hover { color: var(--text); border-color: var(--text-dim); }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .sync-status {
+    font-size: 10px; color: var(--text-muted); font-family: 'DM Mono', monospace;
+    margin-left: auto; display: flex; align-items: center; gap: 5px;
+  }
+  .sync-dot {
+    width: 6px; height: 6px; border-radius: 50%; display: inline-block;
+  }
+  .sync-dot.idle { background: var(--text-muted); }
+  .sync-dot.saving { background: var(--accent); animation: pulse 0.6s ease-in-out infinite; }
+  .sync-dot.ok { background: #22c55e; }
+  .sync-dot.err { background: #ef4444; }
+  .sync-setup-modal input[type="password"] {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    padding: 8px 10px; border-radius: 6px; font-family: 'DM Mono', monospace; font-size: 12px;
+    margin: 6px 0 12px;
+  }
+  .sync-setup-modal input[type="password"]:focus { border-color: var(--accent); outline: none; }
+  @media (max-width: 768px) {
+    header { padding: 12px; }
+    .board { padding: 12px; gap: 8px; }
+    .column { min-width: 260px; max-width: 260px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo"></div>
+    <div class="board-title-wrap" id="titleWrap"></div>
+  </div>
+  <div class="header-right">
+    <button class="filter-btn active" onclick="filterTag('all',event)">All</button>
+    <button class="filter-btn" onclick="filterTag('demo',event)">Demo</button>
+    <button class="filter-btn" onclick="filterTag('blue',event)">Blue</button>
+    <button class="filter-btn" onclick="filterTag('green',event)">Green</button>
+    <button class="filter-btn" onclick="filterTag('purple',event)">Purple</button>
+    <button class="filter-btn" onclick="filterTag('red',event)">Red</button>
+    <button class="filter-btn" onclick="filterTag('yellow',event)">Yellow</button>
+    <span class="hdr-sep"></span>
+    <button class="action-btn" onclick="openAddColumnModal()">+ Category</button>
+    <button class="action-btn" id="archiveToggle" onclick="toggleArchive()">Archive</button>
+    <span class="hdr-sep"></span>
+    <button class="action-btn" onclick="exportBoard()">Export</button>
+    <button class="action-btn" onclick="document.getElementById('importFile').click()">Import</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBoard(event)">
+    <button class="action-btn" id="syncBtn" onclick="onSyncClick()" title="Cloud sync via GitHub Gist">Sync</button>
+  </div>
+</header>
+<div class="stats" id="stats"></div>
+<div class="archive-panel" id="archivePanel"></div>
+<div class="board" id="board"></div>
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script>
+const defaultTasks=[
+  {"id":1,"title":"make DEMO have 15 anomalies?","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":2,"title":"need an icon for the game? something to put on the door?","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":3,"title":"win state with daylight outside - build outside environment for daytime, make motel sign color and change billboard and soda machine to some other face and color for GoGo Soda Pop","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":4,"title":"Main bay guy in mask could laugh as he walks forward. The Laughing Man.","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":5,"title":"Move all stuff in Fab folder that is in level out of Fab folders.","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":6,"title":"wallpaper on walls in basement stairs area instead of white bricks?","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":7,"title":"pick up payphone and have recording on it","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":8,"title":"figure out what to do if they already solved the round and they try to take another picture","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":9,"title":"have diff searching animation for enemies - look for some on Fab","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":10,"title":"check: can you not zoom when the green cir cle is showing?","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":11,"title":"replace placeholder mask object once character is done","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":12,"title":"add creepy laugh in basement when banshee had been moved?","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":13,"title":"maybe some other creepy sounds here and there that aren't classified as anomalies, espcially when the lights are out: see the movie The Innocents","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":14,"title":"hide receptionist when lights go out","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":15,"title":"add ding for bell when successfully capture, or camera capture sounds and broken glass sound when wrong","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":16,"title":"close the entracne door when doing chase anoms or when lights go out","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":17,"title":"Ripples for shark poking out of water","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":18,"title":"Before shipping put up a store page for the Liminal Space game?","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":19,"title":"Player should click to open door, need UI to display when opening door is needeD?","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":20,"title":"NAME: Hotel Stardust","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":21,"title":"need UI or sign to indicate how to open red door","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":22,"title":"test non-lumen, do we need to bake cube map again?","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":23,"title":"sign at the start about sorry the lights have been going out.","desc":"","tags":[],"priority":"med","phase":"General","column":"todo"},
+  {"id":24,"title":"Will need to ramp up intensity of anomalies once player solves 2-3 anomalies. Need to have a pool of \"Beginning\" anomalies and then another pool of higher level anomalies. Use tags and level checks and have a bool crossing the Beginning threshold and if they cross the threshold, even if they reset then the higher anomalies will still activate. Maybe have 2-3 \"final\" encounters with the enemy you have to deal with and maybe 2-3 medium.","desc":"","tags":["red"],"priority":"med","phase":"General","column":"logic"},
+  {"id":25,"title":"Need to change Game Over stuff","desc":"","tags":["blue"],"priority":"med","phase":"General","column":"logic"},
+  {"id":26,"title":"Can we also count how many unique ones they  have encountered and save that value and on load still track that until they see all of them? - handle if player has they have captured all anoms, need to cache extra anoms to fill in for enough rounds","desc":"","tags":["blue"],"priority":"med","phase":"General","column":"logic"},
+  {"id":27,"title":"Group anoms need to check and see if any are also active before they activate","desc":"","tags":[],"priority":"med","phase":"General","column":"logic"},
+  {"id":28,"title":"add numbers (like score on a basketball scoreboard with individual bulbs for lights?) above the power breaker to know what level you are on, can we also add an indicator on the power breaker that might be better than the lights that are there? maybe a bigger lever that is more front and center?","desc":"","tags":[],"priority":"med","phase":"General","column":"logic"},
+  {"id":29,"title":"FIX UP ART AND SETUP STEAM PAGE, get demo ready","desc":"","tags":["red"],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":30,"title":"Test BlairWitch anom after making CPP change","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":31,"title":"Need door open anom along with the liminal space?","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":32,"title":"Giant Spider","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":33,"title":"might want to do 10 small ones more just to get an even 50","desc":"","tags":["purple"],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":34,"title":"Envelope in mail box and maybe have items already in tehre but reverse them as well as hide one of them","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":35,"title":"Deer head has no antlers or glowing eyes","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":36,"title":"numbers on mail slots reversed or have some cryptic writing/symbols","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":37,"title":"plant left corner gone?","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":38,"title":"water jug on table with napkins - can reverse order for that?","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":39,"title":"Chain on door (will eventually replace with light on wall to show the door is locked, so the chain on there can be an anomaly)","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":40,"title":"newspapers cover windows - rework to show repeated posters of killer with GoGo Soda Pop ad?","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":41,"title":"maybe remove painting falls on floor and replace with scary face anom, focus more on the scary stuff","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":42,"title":"possible cable leading into other room anomaly with pulling cord will reset game - take you to title screen but progress is saved for number of rounds you have succeeded in","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":43,"title":"add killer walking past entry way as jumpscare (or at the end of the hall) maybe with the girl missing and blood on floor","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":44,"title":"Maybe: killer sits in middle of room in chair behind fireplace and jsut looks at you following around room? Maybe will sometimes chase when taking picture","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":45,"title":"hotel sign missing letters - maybe blood coming down from back of sign - Sign flipped or blood coming out of it","desc":"","tags":["blue"],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":46,"title":"giant spider - spider web with spider eggs?","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":47,"title":"is slat anom on window too hard? yes","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":48,"title":"Make clock hand move instead of just changing position?","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":49,"title":"scary guy sitting on chair looks at player walking around room","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":50,"title":"another one with the cyclops","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":51,"title":"vampire from discolored 2?","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":52,"title":"Demo needs 8 new ones?","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":53,"title":"Killer grabs you and throws you in the celler and then you hear the old lady laugh and fade out, but it could just be a regular anomaly cutscene?","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":54,"title":"Vamp feeding on receptionist. If get too close of in line of sight she will teleport to player and bite.","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":55,"title":"roaches crawling on desk","desc":"","tags":["demo"],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":56,"title":"missing person with pic of lady in red","desc":"","tags":["demo"],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":57,"title":"Handprints on window - repalces slats","desc":"","tags":["demo"],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":58,"title":"Shadow with no person","desc":"","tags":["demo"],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":59,"title":"TV shows lobby. When you go up to look it can show someone standing near the desk looking at you. then when looking back again it doesn't show it? Could be one where the lights go out when you take a picture of it. And then the baddie comes to get you? Easy escape since you are right there at the door.","desc":"","tags":["demo"],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":60,"title":"extra door in hallway","desc":"","tags":["demo"],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":61,"title":"all dark. single red light above receptionist chair, receptionist gone.","desc":"","tags":["demo"],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":62,"title":"Vamp teleport chase, lights go out and she appears every time the lights come on.","desc":"","tags":["demo"],"priority":"med","phase":"General","column":"anomalies-to-do-25-41-total-left-only-sh"},
+  {"id":63,"title":"Need to spawn player in front of electric panel with doors closed at start- starting point","desc":"","tags":[],"priority":"med","phase":"General","column":"art-fix-up"},
+  {"id":64,"title":"make red door at start open and close","desc":"","tags":[],"priority":"med","phase":"General","column":"art-fix-up"},
+  {"id":65,"title":"Dust motes in some places?","desc":"","tags":["blue"],"priority":"med","phase":"General","column":"art-fix-up"},
+  {"id":66,"title":"Do we need music or some radio static or some background noise other than the room ambiance?","desc":"","tags":[],"priority":"med","phase":"General","column":"art-fix-up"},
+  {"id":67,"title":"Triggers for trailer sequence opening door, and simulating camera capture, flipping the success switch when opeing door to show num one","desc":"","tags":[],"priority":"med","phase":"General","column":"art-fix-up"},
+  {"id":68,"title":"Have bad guy walk pass door as you turn corner in loop to see walk down at end of hallway and have a horror swell","desc":"","tags":[],"priority":"med","phase":"General","column":"art-fix-up"},
+  {"id":69,"title":"bell ding when at front desk","desc":"","tags":[],"priority":"med","phase":"General","column":"art-fix-up"},
+  {"id":70,"title":"Hard flick SFX when opening red door to see number increment with green light go on","desc":"","tags":[],"priority":"med","phase":"General","column":"art-fix-up"},
+  {"id":71,"title":"SFX suitcase open (metal latches flip and open SFX)","desc":"","tags":[],"priority":"med","phase":"General","column":"art-fix-up"},
+  {"id":72,"title":"add footsteps","desc":"","tags":[],"priority":"med","phase":"General","column":"art-fix-up"},
+  {"id":73,"title":"add cat instead of lady in red?","desc":"","tags":[],"priority":"med","phase":"General","column":"art-fix-up"},
+  {"id":74,"title":"Start with walking through the loop and then take a picture of something? But at the end show the lights going out and the bad guy coming through the door","desc":"","tags":[],"priority":"med","phase":"General","column":"trailer"},
+  {"id":75,"title":"Flashlight","desc":"","tags":[],"priority":"med","phase":"General","column":"logic-done"},
+  {"id":76,"title":"When taking pic of monster it will mark anom as captured and make the monster disappear and/or turn off sensing abilities","desc":"","tags":[],"priority":"med","phase":"General","column":"logic-done"},
+  {"id":77,"title":"Make character have anom tag and can be targeted by camera","desc":"","tags":[],"priority":"med","phase":"General","column":"logic-done"},
+  {"id":78,"title":"Open door only if going backwards in loop - create anotehr event","desc":"","tags":[],"priority":"med","phase":"General","column":"logic-done"},
+  {"id":79,"title":"does going thru loop trigger reset anomalies - problem with child GAme Mode?","desc":"","tags":[],"priority":"med","phase":"General","column":"logic-done"},
+  {"id":80,"title":"Need to also make it so we can choose which anomaly we want to see for debug - select by name?","desc":"","tags":["yellow"],"priority":"med","phase":"General","column":"logic-done"},
+  {"id":81,"title":"Disable camera for when player fails or goes backwards through the loop - door will be open when going backward through the loop","desc":"","tags":[],"priority":"med","phase":"General","column":"logic-done"},
+  {"id":82,"title":"Make anom component for simply chasing player and then getting within a certain range, make cam face monster and black out, reset","desc":"","tags":[],"priority":"med","phase":"General","column":"logic-done"},
+  {"id":83,"title":"Add zoom ability?","desc":"","tags":["green"],"priority":"med","phase":"General","column":"logic-done"},
+  {"id":84,"title":"No penalty for taking a pic when not hovered over an anomaly","desc":"","tags":[],"priority":"med","phase":"General","column":"logic-done"},
+  {"id":85,"title":"Door open close BP - will open and disable being able to use camera on anything else. Do not deactivate anomalies here, do it when goign through one of the loop trigger","desc":"","tags":["yellow"],"priority":"med","phase":"General","column":"logic-done"},
+  {"id":86,"title":"Reset Anomalies when entering loop section triggers - just run Deactivate Anomalies in SDS Game Mode - separate it from the Discover Anomaly function. Use event to listen for this in the camera. Do anoms reset?","desc":"","tags":["yellow"],"priority":"med","phase":"General","column":"logic-done"},
+  {"id":87,"title":"Need trigger when entering main area to roll a new round - run DiscoverAnomalies and Next State (if success) or First State (if fail) in SDS Game Mode. And reset the CameraComp PlayerHasOpenedDoor var - test that it increments proper","desc":"","tags":[],"priority":"med","phase":"General","column":"logic-done"},
+  {"id":88,"title":"You are trapped in a hotel lobby. Use your camera to capture anomalies to find an exit. Be careful, some anomalies aren't very friendly.","desc":"","tags":[],"priority":"med","phase":"General","column":"description"},
+  {"id":89,"title":"Welcome to the Agency! You work for an agency that specializes in getting rid of anomalies. are sent to a hotel that has had reports of anomalies. Only you realize that after you have arrived you have been locked inside and the other path to an exit leads to an endless loop. Use your camera to capture anomalies and find a way out.","desc":"","tags":[],"priority":"med","phase":"General","column":"description"},
+  {"id":90,"title":"You are trapped in a hotel lobby.","desc":"","tags":[],"priority":"med","phase":"General","column":"description"},
+  {"id":91,"title":"You work for an agency that specializes in tracking down anomalies. your latest assignment: a hotel","desc":"","tags":[],"priority":"med","phase":"General","column":"description"},
+  {"id":92,"title":"put red light above door instead of chains with lock to indicate it is locked. turn green when it is unlocked. turn off then all lights go out?","desc":"","tags":["blue"],"priority":"med","phase":"General","column":"maybe"},
+  {"id":93,"title":"Look into porting to Epic Store also for free game giveaway","desc":"","tags":[],"priority":"med","phase":"General","column":"maybe"},
+  {"id":94,"title":"add survival mode where you play through all of the anoms and if you miss one then you lose and have to start over (will not have a \"No Anomaly\" state)","desc":"","tags":[],"priority":"med","phase":"General","column":"game-modes"},
+  {"id":95,"title":"endless mode where you see how long a streak you can get and that gets put on a leader board","desc":"","tags":[],"priority":"med","phase":"General","column":"game-modes"},
+  {"id":96,"title":"Time attack mode? Like speed chess where you have a certain amount of time   total. You start with not enough time to finish 8 rounds but with each correct answer you add more time. This means that some anoms that take up time might make you lose if you get them too early. Failing a round doesn’t affect timer but it could put you behind cause you can’t add time to the counter","desc":"","tags":[],"priority":"med","phase":"General","column":"game-modes"},
+  {"id":97,"title":"Cubemap adjustments areas: underwater area, looking into basement anom, in basement coming up, swamp?","desc":"","tags":[],"priority":"med","phase":"General","column":"optimization-pass"},
+  {"id":98,"title":"using lumen again (enable megalights), figure out how to toggle between non-lumen and ambient cubemap setups, will need to switch to cubemap on the liminal space anom for the teleport, can we swap out cubemap textures in realtime?","desc":"","tags":[],"priority":"med","phase":"General","column":"optimization-pass"},
+  {"id":99,"title":"shooting stars every now and then","desc":"","tags":[],"priority":"med","phase":"General","column":"wishlist-polish"},
+  {"id":100,"title":"retro sci fi comic feel with up lighting","desc":"","tags":[],"priority":"med","phase":"General","column":"cover-art"},
+  {"id":101,"title":"Set starting point in right place","desc":"","tags":[],"priority":"med","phase":"General","column":"steam-page-setup"},
+  {"id":102,"title":"Test game through","desc":"","tags":[],"priority":"med","phase":"General","column":"steam-page-setup"},
+  {"id":103,"title":"(Need anims from Emily)","desc":"","tags":[],"priority":"med","phase":"General","column":"steam-page-setup"},
+  {"id":104,"title":"Record video for trailer","desc":"","tags":[],"priority":"med","phase":"General","column":"steam-page-setup"},
+  {"id":105,"title":"Screenshots","desc":"","tags":[],"priority":"med","phase":"General","column":"steam-page-setup"},
+  {"id":106,"title":"Game description","desc":"","tags":[],"priority":"med","phase":"General","column":"steam-page-setup"},
+  {"id":107,"title":"Music","desc":"","tags":[],"priority":"med","phase":"General","column":"steam-page-setup"},
+  {"id":108,"title":"SFX?","desc":"","tags":[],"priority":"med","phase":"General","column":"steam-page-setup"},
+  {"id":109,"title":"Art fix up","desc":"","tags":[],"priority":"med","phase":"General","column":"steam-page-setup"},
+  {"id":110,"title":"Need an icon","desc":"","tags":[],"priority":"med","phase":"General","column":"steam-page-setup"},
+  {"id":111,"title":"liminal space anom - create a enclosed bridge walkway like in a hospital leading to a waiting room like area with only one chair and a TV and the red door leading back loop hallway (better to use this than the big room in case I need to bake lightmaps) or just use what we already have. Potentially can't use cause of Lumen limitations? Can we bake lightmaps in that level and it look good?","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":112,"title":"Cyclops appearing in vent - hand coming out of vent to get soda on floor. soda machine pops out soda cans and a hand in the vent keeps grabbing them on the floor until you take a pic of both and then door opens","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":113,"title":"aquarium outside","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":114,"title":"fire in fireplace - fire","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":115,"title":"pond in lobby with shark in it","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":116,"title":"giant spider walking around - can attack palyer","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":117,"title":"reception sign missing letters or says YOU ARE DEAD or REDRUM or YIU ARE DREAMING ?","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":118,"title":"Well in center anomaly - like in The Ring, but it will be a guy in a clown mask climbing out - add to entire area to hide lack of shadows on candles? make it more swamp like(dirt floor, ivy on ground and walls?, grass, plants? lantern above well instead of candels?","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":119,"title":"red door has different handles or something similar - maybe tricky with doing a click for interacting with the door?","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":120,"title":"Blair witch anomaly where the lights go out and you have to stand and stare into the corner with sounds behind you. Could have a STAND and STARE written in floor and wall, after standing you will hear lots of sounds and banging behind you but if you turn around the baddie will get you","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":121,"title":"close halldoors and turn off lights, run back and forth in hall until lights turn back on, take pic of doors, giant killer mask floating in hall, that comes close and then backs away, avoid touching it or dead?","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":122,"title":"bell dings constatly with no one around - bell can shake with each ding? or can it be in diff spot? maybe it could move out of way when you try to take pic of it, theres a slight delay after the first move (could move to 3 spots and then loop back to main spot)","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":123,"title":"tv flickers to different image - can we do some public domain show on loop for a minute or so?","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":124,"title":"sign on soda machine different","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":125,"title":"mask on desk - maybe light go out for this one too? maybe pair with receptionist gone","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":126,"title":"possesed suitcase that keeps opening and closing","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":127,"title":"Door to basement missing? Walking thru it warps you back to standing in front of door","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":128,"title":"make chess board rotate black and white sides are flipped?","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":129,"title":"diff plant - wilted - shrink petals and make yellow/brown? - or could just shrink with Relax tool?","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":130,"title":"Clock on wall being different time, or second hand going backwards instead of forward","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":131,"title":"receptionist is not there - group her with blood at door","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":132,"title":"Wall pay phone ringing - answering it will play a random recording of matt doing an impression","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":133,"title":"black liquid from vent","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":134,"title":"phone could not have a cord","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":135,"title":"Door open and then as you get closed to it it closes and then all lights go out expect your flashlight and you have to take a pic of the door (which will be without chains but you can't open it)","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":136,"title":"jump scare going down first hall where banchee breaks down part of  cellar door. can have anim of her trying to get out with hole in door","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":137,"title":"exit sign is different","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":138,"title":"Painting on wall being different (but showing creepy face) creepy picture (5 total)","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":139,"title":"Pics fall off wall - need some creepy pics","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":140,"title":"brochure changes","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":141,"title":"suitcases changes","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":142,"title":"ceiling fan does not spin","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":143,"title":"front Door coud have one more set of windows","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":144,"title":"Blood at door in hall","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":145,"title":"Blood footprints on ceiling","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":146,"title":"front door is open when coming in room but then closes when you get closer","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":147,"title":"Walking along the hall you keep walking over a part that creeks and cracks, after so many times it will give in fall to basement full of coffins. One will lead to a hall with lady sitting in chair she will turn into monster and chase you and you have to get up stairs past her and through door to main hallway, door will close behind you and  you will be ok. Take pic of anywhere in the room or on hole in floor after to capture anomaly","desc":"","tags":[],"priority":"med","phase":"General","column":"anomalies-done"},
+  {"id":148,"title":"A bus is waiting outside the hotel and the player has no choice but to get in it. He sees the bus driver and 4-5 other people towards the middle of the bus that look normal. Then the camera looks straight forward, but then you see a blue gloved hand slam on the seat in front of you and as you look up you see the bus driver and the other passengers with the killer masks on all standing around you. Cut to black. End.","desc":"","tags":[],"priority":"med","phase":"General","column":"end-game"},
+  {"id":149,"title":"With the bounty concept the bus driver could hand you a briefcase and you get to your seat and open it and see a lot of money and then look up and see people with the kilelr mask. Bad ending.","desc":"","tags":[],"priority":"med","phase":"General","column":"end-game"},
+  {"id":150,"title":"Good ending is when you finish survival mode and you get in bus and are only one there with bus driver and then drive off and it fades out","desc":"","tags":[],"priority":"med","phase":"General","column":"end-game"},
+  {"id":151,"title":"Alt ending is you find the lady in a suit next to the mask? Maybe the vampire is sucking the blood out of her and she drops to the floor and the vamp teleports out as she sees you coming. But how would it make sense with her form and shape not matching the main baddie?","desc":"","tags":[],"priority":"med","phase":"General","column":"end-game"},
+  {"id":152,"title":"Climbing out of well","desc":"","tags":[],"priority":"med","phase":"General","column":"anim"},
+  {"id":153,"title":"Search anim (better than what is in there now), just looking side to side","desc":"","tags":[],"priority":"med","phase":"General","column":"anim"},
+  {"id":154,"title":"Kill anim (like in devil doll), but we don't see the knife go down, straight rigid animation of just raising his hand up with a knife like a puppet","desc":"","tags":[],"priority":"med","phase":"General","column":"anim"},
+  {"id":155,"title":"(Already have walk anim)","desc":"","tags":[],"priority":"med","phase":"General","column":"anim"},
+  {"id":156,"title":"Hands out walking forward like in Carnival of souls","desc":"","tags":[],"priority":"med","phase":"General","column":"anim"},
+  {"id":157,"title":"Killer sitting idle, but can we have his head follow you around room? Just need sit idle in chair","desc":"","tags":[],"priority":"med","phase":"General","column":"anim"},
+  {"id":158,"title":"Sees player reaction?","desc":"","tags":[],"priority":"med","phase":"General","column":"anim"},
+  {"id":159,"title":"Jump at camera animation for spider","desc":"","tags":[],"priority":"med","phase":"General","column":"anim"},
+  {"id":160,"title":"Trailer, try Keymailer trailer making service (maybe just a 30 sec trailer)","desc":"","tags":[],"priority":"med","phase":"General","column":"steam-page"},
+  {"id":161,"title":"Screenshots","desc":"","tags":[],"priority":"med","phase":"General","column":"steam-page"},
+  {"id":162,"title":"Description","desc":"","tags":[],"priority":"med","phase":"General","column":"steam-page"},
+  {"id":163,"title":"Well in center anomaly -  swamp like(dirt floor, ivy on ground and walls?, grass, plants? Dense fog","desc":"","tags":[],"priority":"med","phase":"General","column":"art-pass"},
+  {"id":164,"title":"Outside of hotel?","desc":"Bus stop area in front of hotel with arm guard blocking from going up road. Long winding road up to main road. Main road is like a straight line along horizon. Moon hangs above. Occasional shooting star.","tags":[],"priority":"med","phase":"General","column":"art-pass"},
+  {"id":165,"title":"add SFX like laughing or screaming behind basement door occasionally","desc":"","tags":[],"priority":"med","phase":"General","column":"sfx"},
+  {"id":166,"title":"SFX for crickets and frogs for well ring anom - turn off when taking picture to create tension and then spawn in monster","desc":"","tags":[],"priority":"med","phase":"General","column":"sfx"},
+  {"id":167,"title":"wind when the lights go out","desc":"","tags":[],"priority":"med","phase":"General","column":"sfx"},
+  {"id":168,"title":"whispering when lights go out","desc":"","tags":[],"priority":"med","phase":"General","column":"sfx"},
+  {"id":169,"title":"laughing by killer when he appears","desc":"","tags":[],"priority":"med","phase":"General","column":"sfx"},
+  {"id":170,"title":"maybe some other SFX like in Max Payne in that dream sequence","desc":"","tags":[],"priority":"med","phase":"General","column":"sfx"},
+  {"id":171,"title":"Add sound for walking over break section","desc":"","tags":[],"priority":"med","phase":"General","column":"sfx"},
+  {"id":172,"title":"Dust/fog effects","desc":"","tags":[],"priority":"med","phase":"General","column":"basement-anom"},
+  {"id":173,"title":"SFX","desc":"","tags":[],"priority":"med","phase":"General","column":"basement-anom"},
+  {"id":174,"title":"Don't reset counter when doing game over getting captured","desc":"","tags":[],"priority":"med","phase":"General","column":"character-anom-tasks"},
+  {"id":175,"title":"Close door to backwards loop when in a monster encounter?","desc":"","tags":[],"priority":"med","phase":"General","column":"character-anom-tasks"},
+  {"id":176,"title":"Cyclops monster could just look out though vent and then when you get too close to try to take pic it will close the vent so you can't take pic.","desc":"","tags":[],"priority":"med","phase":"General","column":"character-anom-tasks"},
+  {"id":177,"title":"receptionist anoms have to be grouped to avoid showing her in two places at once","desc":"","tags":[],"priority":"med","phase":"General","column":"character-anom-tasks"},
+  {"id":178,"title":"Make killer walk like robot? Thinking that his knife stab could be like Hugo in Devil Doll","desc":"","tags":[],"priority":"med","phase":"General","column":"character-anom-tasks"},
+  {"id":179,"title":"Killer has a laugh when walking and lights always go out","desc":"","tags":[],"priority":"med","phase":"General","column":"character-anom-tasks"},
+  {"id":180,"title":"Could monster be in exit elevator? Maybe when you have all anoms captured instead of pulling lever you go around corner and then the guy is there to grab you. Not an anom but just a bad ending.","desc":"","tags":["red"],"priority":"med","phase":"General","column":"general-notes"},
+  {"id":181,"title":"Should we not show the outside? except when opening door?","desc":"","tags":[],"priority":"med","phase":"General","column":"general-notes"},
+  {"id":182,"title":"painting on back wall in hallway?","desc":"","tags":[],"priority":"med","phase":"General","column":"general-notes"},
+  {"id":183,"title":"Add the liminal space level as an anomaly?","desc":"","tags":[],"priority":"med","phase":"General","column":"general-notes"},
+  {"id":184,"title":"Have Matt do a voice impression on the phone","desc":"","tags":[],"priority":"med","phase":"General","column":"general-notes"},
+  {"id":185,"title":"Add fog in basement?","desc":"","tags":[],"priority":"med","phase":"General","column":"general-notes"},
+  {"id":186,"title":"Pay Phone on wall","desc":"","tags":[],"priority":"med","phase":"General","column":"general-notes"},
+  {"id":187,"title":"Try to spawn in banshee using BP actors instead of putting them in the level.","desc":"","tags":[],"priority":"med","phase":"General","column":"general-notes"},
+  {"id":188,"title":"Occlusion cullling?","desc":"","tags":[],"priority":"med","phase":"General","column":"general-notes"},
+  {"id":189,"title":"(empty) Click  when trying to take picture but camera is disabled","desc":"","tags":[],"priority":"med","phase":"General","column":"audio"},
+  {"id":190,"title":"Phone rings and Matt's voice doing Elon says the lyrics from Radiohead's Creep.","desc":"","tags":[],"priority":"med","phase":"General","column":"audio"},
+  {"id":191,"title":"Rocking chair creaking in basement","desc":"","tags":[],"priority":"med","phase":"General","column":"sfx-2"},
+  {"id":192,"title":"Sound of wind or haunting tone in basement or when killer is around","desc":"","tags":[],"priority":"med","phase":"General","column":"sfx-2"},
+  {"id":193,"title":"Laughing killer?","desc":"","tags":[],"priority":"med","phase":"General","column":"sfx-2"},
+  {"id":194,"title":"Ticking clock","desc":"","tags":[],"priority":"med","phase":"General","column":"sfx-2"},
+  {"id":195,"title":"need more minors that are less obvious?","desc":"","tags":["purple"],"priority":"med","phase":"General","column":"minor-anomalies-need-30-have-21"},
+  {"id":196,"title":"Mask on wall being different","desc":"","tags":["yellow","blue"],"priority":"med","phase":"General","column":"minor-anomalies-need-30-have-21"},
+  {"id":197,"title":"add steps before entering lobby? And can have an anomaly where you are high up and need to jump down into the lobby","desc":"","tags":["blue","yellow"],"priority":"med","phase":"General","column":"minor-anomalies-need-30-have-21"},
+  {"id":198,"title":"lamps upside down","desc":"","tags":["blue"],"priority":"med","phase":"General","column":"minor-anomalies-need-30-have-21"},
+  {"id":199,"title":"woman's book is Fahrenheit 451, but changes to something else - might need an alternate anom - too hard to see book cover","desc":"","tags":["red"],"priority":"med","phase":"General","column":"minor-anomalies-need-30-have-21"},
+  {"id":200,"title":"balloons?","desc":"","tags":["blue"],"priority":"med","phase":"General","column":"minor-anomalies-need-30-have-21"},
+  {"id":201,"title":"wall wood panel can have a diff pattern","desc":"","tags":["red","yellow"],"priority":"med","phase":"General","column":"minor-anomalies-need-30-have-21"},
+  {"id":202,"title":"Lightning storm in distance, would work better in outdoor scene","desc":"","tags":["blue"],"priority":"med","phase":"General","column":"minor-anomalies-need-30-have-21"},
+  {"id":203,"title":"phone ringing and answering it will give a backward recording of something like \"I hope you are enjoying the game\"","desc":"","tags":[],"priority":"med","phase":"General","column":"minor-anomalies-need-30-have-21"},
+  {"id":204,"title":"Painting that shows lobby hallway but it sometimes the picture changes and will show somethiing new in the room. when looking at it that thing will appear in the room","desc":"","tags":[],"priority":"med","phase":"General","column":"minor-anomalies-need-30-have-21"},
+  {"id":205,"title":"billboard outside is missing face","desc":"","tags":["blue"],"priority":"med","phase":"General","column":"minor-anomalies-need-30-have-21"},
+  {"id":206,"title":"add playground merry go round in middle of room in place of chess board","desc":"","tags":["yellow","blue"],"priority":"med","phase":"General","column":"minor-anomalies-need-30-have-21"},
+  {"id":207,"title":"water/blood coming out of TV or painting like water fall? tv screen is empty?","desc":"","tags":["red"],"priority":"med","phase":"General","column":"medium-anomaies"},
+  {"id":208,"title":"skull rolls on floor as you are walking into room and you see a skelton on stool instead of woman","desc":"","tags":["yellow"],"priority":"med","phase":"General","column":"medium-anomaies"},
+  {"id":209,"title":"Things on ceiling -spiders?","desc":"","tags":["red"],"priority":"med","phase":"General","column":"medium-anomaies"},
+  {"id":210,"title":"Moose head on wall that moves","desc":"","tags":["blue"],"priority":"med","phase":"General","column":"medium-anomaies"},
+  {"id":211,"title":"Skeletons on chairs when lights go out","desc":"","tags":["red"],"priority":"med","phase":"General","column":"medium-anomaies"},
+  {"id":212,"title":"Cable on ground that runs into a room you don't have access to until one anomaly. Then it leads to a computer or power switch and when pulling it it reboots the app and resets you (achievement) - also an anomaly, but it will count towards the anomaly. but maybe you will be going blind from then on, you can't see the level number you are on","desc":"","tags":["blue","yellow"],"priority":"med","phase":"General","column":"medium-anomaies"},
+  {"id":213,"title":"Coffin in middle of room","desc":"","tags":["red"],"priority":"med","phase":"General","column":"medium-anomaies"},
+  {"id":214,"title":"flaming zombie walking towards player?","desc":"","tags":["yellow"],"priority":"med","phase":"General","column":"medium-anomaies"},
+  {"id":215,"title":"Lights turn off and you are stuck in the first hallway, sounds and growling occurs. Have to go back to the elevator you came in? jump scare going down first hall where banchee breaks down part of  cellar door. can have anim of her trying to get out with hole in door, maybe have to go back and forth down the hall a certain # of times before it will open?","desc":"","tags":["red"],"priority":"med","phase":"General","column":"medium-anomaies"},
+  {"id":216,"title":"killer on stool instead of lady with lights out","desc":"","tags":[],"priority":"med","phase":"General","column":"medium-anomaies"},
+  {"id":217,"title":"take picture of someone dusting painting and they go after you","desc":"","tags":[],"priority":"med","phase":"General","column":"major-anomalies"},
+  {"id":218,"title":"take picture of cleaning lady and she goes after you","desc":"","tags":[],"priority":"med","phase":"General","column":"major-anomalies"},
+  {"id":219,"title":"Another door anom where there will be banging on the door and it will ratlle and when you get close to it it will open and the masked man will come out and door will close when he crosses threshold. Doors swing outwards. Need to take pic of anom first before it monster appears","desc":"","tags":["red"],"priority":"med","phase":"General","column":"major-anomalies"},
+  {"id":220,"title":"Person with pale skin or can't see reflection in mirror, has red eyes,","desc":"","tags":[],"priority":"med","phase":"General","column":"strange-occurances-anomalies"},
+  {"id":221,"title":"Skeletons walking around","desc":"","tags":[],"priority":"med","phase":"General","column":"strange-occurances-anomalies"},
+  {"id":222,"title":"Lights flicker and inbetween flickers the room gets reveresed, like you walk on the ceiling vs being on ground.","desc":"","tags":[],"priority":"med","phase":"General","column":"strange-occurances-anomalies"},
+  {"id":223,"title":"image.png","desc":"","tags":[],"priority":"med","phase":"General","column":"strange-occurances-anomalies"},
+  {"id":224,"title":"Enemy like this? And could put face on building outside. Wood silo tower or diner? should have vamp fangs","desc":"","tags":[],"priority":"med","phase":"General","column":"strange-occurances-anomalies"},
+  {"id":225,"title":"4c9d665e334b231941c1322b238dc47b.png","desc":"","tags":[],"priority":"med","phase":"General","column":"strange-occurances-anomalies"},
+  {"id":226,"title":"image.png","desc":"","tags":[],"priority":"med","phase":"General","column":"strange-occurances-anomalies"},
+  {"id":227,"title":"Cyclops","desc":"","tags":[],"priority":"med","phase":"General","column":"vampire-monster-anamolies-with-capture"},
+  {"id":228,"title":"child goes after you","desc":"","tags":[],"priority":"med","phase":"General","column":"vampire-monster-anamolies-with-capture"},
+  {"id":229,"title":"can get caught by shark in pond","desc":"","tags":[],"priority":"med","phase":"General","column":"vampire-monster-anamolies-with-capture"},
+  {"id":230,"title":"creepy vamp child","desc":"","tags":[],"priority":"med","phase":"General","column":"vampire-monster-anamolies-with-capture"},
+  {"id":231,"title":"Norman bates mother","desc":"","tags":[],"priority":"med","phase":"General","column":"vampire-monster-anamolies-with-capture"},
+  {"id":232,"title":"Final vampire is larger than life and like 8 feet tall","desc":"","tags":[],"priority":"med","phase":"General","column":"vampire-monster-anamolies-with-capture"},
+  {"id":233,"title":"Lights go out when in the start hall and you see a light flicker in the main room and you see a kid riding a bicycle in a circle with a headlamp.","desc":"","tags":["blue"],"priority":"med","phase":"General","column":"vampire-monster-anamolies-with-capture"},
+  {"id":234,"title":"radio","desc":"","tags":[],"priority":"med","phase":"General","column":"other-props-in-environment"},
+  {"id":235,"title":"trees outside - with building outside, pic with clown face on it","desc":"","tags":[],"priority":"med","phase":"General","column":"other-props-in-environment"},
+  {"id":236,"title":"try out green only wall paint or maybe old house wallpaper?","desc":"","tags":[],"priority":"med","phase":"General","column":"notes"},
+  {"id":237,"title":"try out green only wall paint or maybe old house wallpaper?","desc":"","tags":[],"priority":"med","phase":"General","column":"notes"},
+  {"id":238,"title":"safe mode?","desc":"","tags":[],"priority":"med","phase":"General","column":"notes"},
+  {"id":239,"title":"TAGLINE : Document and escape from the vampires or else be forced to wander the endless night","desc":"","tags":[],"priority":"med","phase":"General","column":"notes"},
+  {"id":240,"title":"audio is really important - wind sounds, screams, footsteps whispers","desc":"","tags":[],"priority":"med","phase":"General","column":"notes"},
+  {"id":241,"title":"Name: Vampire Detective Agency","desc":"","tags":[],"priority":"med","phase":"General","column":"notes"},
+  {"id":242,"title":"Can resuse vamp and monster from D2","desc":"","tags":[],"priority":"med","phase":"General","column":"notes"},
+  {"id":243,"title":"can we make it a vampire theme?","desc":"","tags":[],"priority":"med","phase":"General","column":"notes"},
+  {"id":244,"title":"Multiplayer? Not sure aobut this now cause of the lack of being able to port. If going that route then you have to charge a low price and maybe only release on Steam...","desc":"","tags":[],"priority":"med","phase":"General","column":"notes"},
+  {"id":245,"title":"should it be one level at a time like the other games and charge less? thing is people are less likey to buy future versions of the game, better to do it in one shot.","desc":"","tags":[],"priority":"med","phase":"General","column":"notes"},
+  {"id":246,"title":"You are an intern for a vampire hunting agency. You have to go to places where anomalies have been reported which coincide with the presence of vampires and other creatures. Your job is to lure the vampires out by spotting and reporting anomalies, Once the vampires have been lured out you must alert the vampire agency and they will come and take care of the vampires. Can you survive the hunt?","desc":"","tags":[],"priority":"med","phase":"General","column":"notes"},
+  {"id":247,"title":"Do more anomalies where all the lights go out and you have a flashlight. Could use addressables to load in geo where the everythign is dynamic. Additive loading.","desc":"","tags":[],"priority":"med","phase":"General","column":"notes"},
+  {"id":248,"title":"When vamp appearrs turn lightsoff","desc":"","tags":[],"priority":"med","phase":"General","column":"notes"},
+  {"id":249,"title":"Can we have it so if you see the vamp but don't take a picture you can still survive but it will say you explored the level and confirmed the vamp is there, but not completed it so they don't know what kind of vamp it is. You complete it when you get the pic.","desc":"","tags":[],"priority":"med","phase":"General","column":"notes"},
+  {"id":250,"title":"Can anomalies just be things that move like in Cabin Factory? Also take note of their use of atmosphere, turn down the lights, play some ghostly-windy ambience, place in some random sounds of someone walking. Could be a great multi-player experience too.","desc":"","tags":[],"priority":"med","phase":"General","column":"notes"},
+  {"id":251,"title":"Might be ok if you are allowed to get caught. But seems like an endgame of taking a picture of the vampire would be hard to do if that's the only thing you need to do, maybe it would be you need to observe the habits of the vampire with the pictures and that's the purpose of it?","desc":"","tags":[],"priority":"med","phase":"General","column":"notes"},
+  {"id":252,"title":"Maybe consider making the character not appealing at all, reuse the cyclops as a bait character?","desc":"","tags":[],"priority":"med","phase":"General","column":"notes"},
+  {"id":253,"title":"Consider just doing one level and charging $5 to get an idea of what to do and what not to do?","desc":"","tags":[],"priority":"med","phase":"General","column":"notes"},
+  {"id":254,"title":"Maybe there’s a timer on the elevator coming to the floor and you have to wait until it opens. Until then you look around or have to avoid whatever is in the room","desc":"","tags":[],"priority":"med","phase":"General","column":"notes"},
+  {"id":255,"title":"wind howling every time the lights go out, fade out when going into loop","desc":"","tags":[],"priority":"med","phase":"General","column":"notes"},
+  {"id":256,"title":"Have option for Lumen but need to also make sure if not using lumen the light settings look good, can we swap between diff light settings?","desc":"","tags":[],"priority":"med","phase":"General","column":"lighting"},
+  {"id":257,"title":"Show where you got the anomaly wrong","desc":"","tags":[],"priority":"med","phase":"General","column":"thing-from-false-mall-i-like"},
+  {"id":258,"title":"Camera: if you take pic of wrong thing then it resets, but you have to run out to exit (maybe it can just warp you back?). Or the lights just turn off.","desc":"","tags":[],"priority":"med","phase":"General","column":"thing-from-false-mall-i-like"},
+  {"id":259,"title":"If you get caught after taking a pic of something then you won't get sent back to start","desc":"","tags":[],"priority":"med","phase":"General","column":"thing-from-false-mall-i-like"},
+  {"id":260,"title":"After getting first three minor anomalies it starts to ramp up, even if you reset.","desc":"","tags":[],"priority":"med","phase":"General","column":"thing-from-false-mall-i-like"},
+  {"id":261,"title":"The quick pace of going to another room is important rather than doing the elevator thing. Having to wait breaks flow.","desc":"","tags":[],"priority":"med","phase":"General","column":"thing-from-false-mall-i-like"},
+  {"id":262,"title":"Like the idea of music, and then stopping if you get it wrong but didn't like that music. But in the end it might be too annoying. Could create some interesting backwards, scary sounding stuff.","desc":"","tags":[],"priority":"med","phase":"General","column":"thing-from-false-mall-i-like"},
+  {"id":263,"title":"Setup logic for camera capture - see if it works","desc":"","tags":[],"priority":"med","phase":"General","column":"timeline"},
+  {"id":264,"title":"Finalize list of anomalies (minimum of 35)","desc":"","tags":[],"priority":"med","phase":"General","column":"timeline"},
+  {"id":265,"title":"Finish environment - 1 month","desc":"","tags":[],"priority":"med","phase":"General","column":"timeline"},
+  {"id":266,"title":"setup anaomalies - 1 month","desc":"","tags":[],"priority":"med","phase":"General","column":"timeline"},
+  {"id":267,"title":"vampire/charcter anomalies (char models/anims) - hire out - need concepts? 1 week for setup and getting into anomalies","desc":"","tags":[],"priority":"med","phase":"General","column":"timeline"},
+  {"id":268,"title":"UI - 1 week","desc":"","tags":[],"priority":"med","phase":"General","column":"timeline"},
+  {"id":269,"title":"gameplay polish 2 weeks","desc":"","tags":[],"priority":"med","phase":"General","column":"timeline"},
+  {"id":270,"title":"audio/music - hire out and look up free SFX? 2 weeks","desc":"","tags":[],"priority":"med","phase":"General","column":"timeline"},
+  {"id":271,"title":"1 month to polish?","desc":"","tags":[],"priority":"med","phase":"General","column":"timeline"},
+  {"id":272,"title":"4 months total?","desc":"","tags":[],"priority":"med","phase":"General","column":"timeline"},
+  {"id":273,"title":"The presence of vampires will create anomalies. If there is an anomaly you have to go into the elevator and press the anomaly button","desc":"","tags":[],"priority":"med","phase":"General","column":"rules"},
+  {"id":274,"title":"If you spot a vampire you have to take a picture. Give a list of things to look out for, they do not sparkle.","desc":"","tags":[],"priority":"med","phase":"General","column":"rules"},
+  {"id":275,"title":"Report any anomaly by pushing the correct button on the elevator, but if there is an anomaly that involves humans you have to determine if they are a vampire or not. If they are then take their picture.","desc":"","tags":[],"priority":"med","phase":"General","column":"rules"},
+  {"id":276,"title":"Will be a fail/reset if you get caught, fail t report an anomaly or take a picture of a vampire that is not a vampire.","desc":"","tags":[],"priority":"med","phase":"General","column":"rules"},
+  {"id":277,"title":"Could we also photograph the presence of vampires that have been there. Tea cup with blood , dead person with vampire fang bites. Empty coffin. Your job is to record possible vampire activity and report it back to the agency.","desc":"","tags":[],"priority":"med","phase":"General","column":"rules"},
+  {"id":278,"title":"Chill in the air, vapor form, strange moving shadows, dead flowers?, shifting furniture, scratches on wall.","desc":"","tags":[],"priority":"med","phase":"General","column":"rules"},
+  {"id":279,"title":"What if there is no fail reset and you just have to keep coming in the room to find the changes? Might not have enough tension?","desc":"","tags":[],"priority":"med","phase":"General","column":"rules"},
+  {"id":280,"title":"Multiple anomalies per round, take pictures of all anomalies per round. If you miss any then you will reset.","desc":"","tags":[],"priority":"med","phase":"General","column":"rules"},
+  {"id":281,"title":"Take pic of vampires and it freezes then","desc":"","tags":[],"priority":"med","phase":"General","column":"rules"},
+  {"id":282,"title":"Can we do 5 levels","desc":"","tags":[],"priority":"med","phase":"General","column":"levels"},
+  {"id":283,"title":"Laundry mat/bowling alley?","desc":"","tags":[],"priority":"med","phase":"General","column":"levels"},
+  {"id":284,"title":"Mall","desc":"","tags":[],"priority":"med","phase":"General","column":"levels"},
+  {"id":285,"title":"Library","desc":"","tags":[],"priority":"med","phase":"General","column":"levels"},
+  {"id":286,"title":"Drive in theater - giant monster towering over screen","desc":"","tags":[],"priority":"med","phase":"General","column":"levels"},
+  {"id":287,"title":"hotel at night? simialr to resort, scissor gate","desc":"","tags":[],"priority":"med","phase":"General","column":"levels"},
+  {"id":288,"title":"Office lobby?","desc":"","tags":[],"priority":"med","phase":"General","column":"levels"},
+  {"id":289,"title":"Museum? - purple walls, all fixtures are covered up?","desc":"","tags":[],"priority":"med","phase":"General","column":"levels"},
+  {"id":290,"title":"Department store at night with displays and racks empty","desc":"","tags":[],"priority":"med","phase":"General","column":"levels"},
+  {"id":291,"title":"Billiard pool hall","desc":"","tags":[],"priority":"med","phase":"General","column":"levels"},
+  {"id":292,"title":"school hallway (70s)","desc":"","tags":[],"priority":"med","phase":"General","column":"levels"},
+  {"id":293,"title":"school","desc":"","tags":[],"priority":"med","phase":"General","column":"levels"},
+  {"id":294,"title":"image.png","desc":"","tags":[],"priority":"med","phase":"General","column":"levels"},
+  {"id":295,"title":"Elevator opens","desc":"","tags":[],"priority":"med","phase":"General","column":"gameloop"},
+  {"id":296,"title":"Go into hall","desc":"","tags":[],"priority":"med","phase":"General","column":"gameloop"},
+  {"id":297,"title":"Once lobby is entered the eelvator opens for the exit?","desc":"","tags":[],"priority":"med","phase":"General","column":"gameloop"},
+  {"id":298,"title":"Observe anomolies if any","desc":"","tags":[],"priority":"med","phase":"General","column":"gameloop"},
+  {"id":299,"title":"Take pic of vamp if one detected","desc":"","tags":[],"priority":"med","phase":"General","column":"gameloop"},
+  {"id":300,"title":"Go into exit elevator and press anomaly or no anomaly button","desc":"","tags":[],"priority":"med","phase":"General","column":"gameloop"},
+  {"id":301,"title":"There is a switch that activates the sun, that will remove all vampires. You have to solve enough anomalies to charge the sun dial. Get it wrong and it will reset. Is there a set of lights next to it to indicate charging is complete?","desc":"","tags":[],"priority":"med","phase":"General","column":"gameloop"},
+  {"id":302,"title":"Ring desk bell for 10 times and annoy the receptionist or just break it?","desc":"","tags":[],"priority":"med","phase":"General","column":"achievements"},
+  {"id":303,"title":"shimmer ,not sparkle","desc":"","tags":[],"priority":"med","phase":"General","column":"how-to-spot-a-vampire"},
+  {"id":304,"title":"pale skin'","desc":"","tags":[],"priority":"med","phase":"General","column":"how-to-spot-a-vampire"},
+  {"id":305,"title":"yellow eyes","desc":"","tags":[],"priority":"med","phase":"General","column":"how-to-spot-a-vampire"},
+  {"id":306,"title":"fangs","desc":"","tags":[],"priority":"med","phase":"General","column":"how-to-spot-a-vampire"},
+  {"id":307,"title":"some don't like their picture to be taken","desc":"","tags":[],"priority":"med","phase":"General","column":"how-to-spot-a-vampire"},
+  {"id":308,"title":"Train tracks with train coming if you wait too long, just cycles you back to level reset","desc":"","tags":[],"priority":"med","phase":"General","column":"mall-level"},
+  {"id":309,"title":"Bowling ball bouncing","desc":"","tags":[],"priority":"med","phase":"General","column":"mall-level"},
+  {"id":310,"title":"Bamboo accents","desc":"","tags":[],"priority":"med","phase":"General","column":"office-giant-space-retro"},
+  {"id":311,"title":"Cabin Factory has 7 scenarios where you can get captured, out of 26-ish","desc":"","tags":[],"priority":"med","phase":"General","column":"ref-cabin-factory"},
+  {"id":312,"title":"11 are different but safe - so 37 variants total, but achievement says 41 total?","desc":"","tags":[],"priority":"med","phase":"General","column":"ref-cabin-factory"},
+  {"id":313,"title":"Platform 8 has about 31 anomolies","desc":"","tags":[],"priority":"med","phase":"General","column":"ref-cabin-factory"},
+  {"id":314,"title":"Exit 8 has 30 and some deaths too","desc":"","tags":[],"priority":"med","phase":"General","column":"ref-cabin-factory"},
+  {"id":315,"title":"work on it part time while porting","desc":"","tags":[],"priority":"med","phase":"General","column":"misc"},
+  {"id":316,"title":"can i do half anomalies for a demo? to get feedback? like 10 or so?","desc":"","tags":[],"priority":"med","phase":"General","column":"misc"},
+  {"id":317,"title":"Not sure about needing to capture with camera, could be too hard?","desc":"","tags":[],"priority":"med","phase":"General","column":"misc"},
+  {"id":318,"title":"Receptionist or other characters sparkle and if you take a pic of them you get an achievement saying vampires don’t sparkle","desc":"","tags":[],"priority":"med","phase":"General","column":"misc"},
+  {"id":319,"title":"Add vent for cyclops","desc":"","tags":[],"priority":"med","phase":"General","column":"misc"},
+  {"id":320,"title":"How to make it so you can’t take pic too far back? Add range for camera like a fov distanace check?","desc":"","tags":[],"priority":"med","phase":"General","column":"misc"},
+  {"id":321,"title":"Swinging pendulum that’s an ax","desc":"","tags":[],"priority":"med","phase":"General","column":"misc"},
+  {"id":322,"title":"Grandfather clock?","desc":"","tags":[],"priority":"med","phase":"General","column":"misc"},
+  {"id":323,"title":"Camera range, when you hold up camera a viewfinder up comes up and it can be out of focus if you’re too far? Maybe a message that says ‘get closer’?","desc":"","tags":[],"priority":"med","phase":"General","column":"misc"},
+  {"id":324,"title":"Small pond in lobby where you can fish, shark comes out of pond, or see shark fin swimming","desc":"","tags":[],"priority":"med","phase":"General","column":"misc"},
+  {"id":325,"title":"Outside like an aquarium, full water with fish.","desc":"","tags":[],"priority":"med","phase":"General","column":"misc"},
+  {"id":326,"title":"Vamp comes out of coffin and attacks after taking picture","desc":"","tags":[],"priority":"med","phase":"General","column":"chase-sequences"},
+  {"id":327,"title":"Cyclops chases","desc":"","tags":[],"priority":"med","phase":"General","column":"chase-sequences"},
+  {"id":328,"title":"Giant spiders","desc":"","tags":[],"priority":"med","phase":"General","column":"chase-sequences"},
+  {"id":329,"title":"Child vampire","desc":"","tags":[],"priority":"med","phase":"General","column":"chase-sequences"},
+  {"id":330,"title":"Sometimes receptionist comes after you, sometimes they can be camps afer taking picture, but sometimes not","desc":"","tags":[],"priority":"med","phase":"General","column":"chase-sequences"},
+  {"id":331,"title":"Clowns and balloons","desc":"","tags":[],"priority":"med","phase":"General","column":"chase-sequences"},
+  {"id":332,"title":"manniquine parts","desc":"","tags":[],"priority":"med","phase":"General","column":"ideas"},
+  {"id":333,"title":"slow moving ceiling fans","desc":"","tags":[],"priority":"med","phase":"General","column":"ideas"},
+  {"id":334,"title":"lights go out and there's a flicker of the light every now and then and theers's a coffin that shows up in a few different places and then it settles. then in the dark you hae to open the coffin and take a pic of the vamp before it gets you","desc":"","tags":[],"priority":"med","phase":"General","column":"ideas"},
+  {"id":335,"title":"music playing over speakers","desc":"","tags":[],"priority":"med","phase":"General","column":"department-store-level"},
+  {"id":336,"title":"Ding-dong when there is an announcement over the speakers","desc":"","tags":[],"priority":"med","phase":"General","column":"department-store-level"}
+];
+const defaultColumns=[
+  {"id":"todo","label":"TODO","color":"#3f3f46"},
+  {"id":"logic","label":"logic","color":"#3b82f6"},
+  {"id":"anomalies-to-do-25-41-total-left-only-sh","label":"Anomalies to do - 25/41 total left (only show max of two per level)","color":"#a855f7"},
+  {"id":"art-fix-up","label":"Art fix up","color":"#ef4444"},
+  {"id":"trailer","label":"Trailer","color":"#f59e0b"},
+  {"id":"logic-done","label":"Logic - Done","color":"#22c55e"},
+  {"id":"description","label":"Description","color":"#22d3ee"},
+  {"id":"maybe","label":"Maybe","color":"#ec4899"},
+  {"id":"game-modes","label":"Game Modes","color":"#3f3f46"},
+  {"id":"optimization-pass","label":"Optimization pass","color":"#3b82f6"},
+  {"id":"wishlist-polish","label":"Wishlist_Polish","color":"#a855f7"},
+  {"id":"cover-art","label":"Cover art","color":"#ef4444"},
+  {"id":"steam-page-setup","label":"Steam page setup","color":"#f59e0b"},
+  {"id":"anomalies-done","label":"Anomalies Done","color":"#22c55e"},
+  {"id":"end-game","label":"End game","color":"#22d3ee"},
+  {"id":"anim","label":"Anim","color":"#ec4899"},
+  {"id":"steam-page","label":"Steam page","color":"#3f3f46"},
+  {"id":"art-pass","label":"Art pass","color":"#3b82f6"},
+  {"id":"sfx","label":"SFX","color":"#a855f7"},
+  {"id":"basement-anom","label":"Basement anom","color":"#ef4444"},
+  {"id":"character-anom-tasks","label":"Character anom tasks","color":"#f59e0b"},
+  {"id":"general-notes","label":"General notes","color":"#22d3ee"},
+  {"id":"audio","label":"Audio","color":"#ec4899"},
+  {"id":"sfx-2","label":"SFX (2)","color":"#3f3f46"},
+  {"id":"minor-anomalies-need-30-have-21","label":"Minor anomalies (need 30) have 21","color":"#3b82f6"},
+  {"id":"medium-anomaies","label":"Medium anomaies","color":"#a855f7"},
+  {"id":"major-anomalies","label":"Major anomalies","color":"#ef4444"},
+  {"id":"strange-occurances-anomalies","label":"Strange occurances - anomalies","color":"#f59e0b"},
+  {"id":"vampire-monster-anamolies-with-capture","label":"Vampire/monster anamolies with capture","color":"#22d3ee"},
+  {"id":"other-props-in-environment","label":"Other props in environment","color":"#ec4899"},
+  {"id":"notes","label":"Notes","color":"#3f3f46"},
+  {"id":"lighting","label":"Lighting","color":"#3b82f6"},
+  {"id":"thing-from-false-mall-i-like","label":"Thing from False Mall I like","color":"#a855f7"},
+  {"id":"timeline","label":"Timeline","color":"#ef4444"},
+  {"id":"rules","label":"Rules","color":"#f59e0b"},
+  {"id":"levels","label":"Levels","color":"#22d3ee"},
+  {"id":"gameloop","label":"Gameloop","color":"#ec4899"},
+  {"id":"achievements","label":"Achievements","color":"#3f3f46"},
+  {"id":"how-to-spot-a-vampire","label":"How to spot a vampire","color":"#3b82f6"},
+  {"id":"mall-level","label":"Mall level","color":"#a855f7"},
+  {"id":"office-giant-space-retro","label":"Office  - giant space retro","color":"#ef4444"},
+  {"id":"ref-cabin-factory","label":"Ref-Cabin Factory","color":"#f59e0b"},
+  {"id":"misc","label":"Misc","color":"#22d3ee"},
+  {"id":"chase-sequences","label":"Chase sequences","color":"#ec4899"},
+  {"id":"features","label":"Features","color":"#3f3f46"},
+  {"id":"ideas","label":"Ideas","color":"#3b82f6"},
+  {"id":"department-store-level","label":"Department store level","color":"#a855f7"}
+];
+const SWATCHES=["#3f3f46","#3b82f6","#a855f7","#22c55e","#ef4444","#f59e0b","#22d3ee","#ec4899"];
+const ALL_TAGS=["demo","blue","green","purple","red","yellow"];
+
+let kanbanState=ld('vhi-state')||{};
+let customTasks=ld('vhi-custom-tasks')||[];
+let customColumns=ld('vhi-custom-columns')||[];
+let archivedIds=ld('vhi-archived')||[];
+let taskEdits=ld('vhi-task-edits')||{};
+let boardName=ld('vhi-board-name')||{title:"Vampire Hunter Intern",subtitle:"— Exit 8-like"};
+let cardOrder=ld('vhi-card-order')||{};
+let columnOrder=ld('vhi-column-order')||[];
+let columnRenames=ld('vhi-column-renames')||{};
+let columnColors=ld('vhi-column-colors')||{};
+let deletedColumns=ld('vhi-deleted-columns')||[];
+let activeFilter='all', archiveOpen=false;
+
+function ld(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}}
+let _syncTimer=null;
+let _gistToken=ld('vhi-gist-token');
+let _gistId=ld('vhi-gist-id');
+function sv(k,v){
+  localStorage.setItem(k,JSON.stringify(v));
+  if(_gistToken&&_gistId){
+    if(_syncTimer)clearTimeout(_syncTimer);
+    _syncTimer=setTimeout(syncToGist,3000);
+  }
+}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function getAllColumns(){
+  let cols=[...defaultColumns,...customColumns].filter(c=>!deletedColumns.includes(c.id)).map(c=>{
+    const nc={...c};
+    if(columnRenames[c.id])nc.label=columnRenames[c.id];
+    if(columnColors[c.id])nc.color=columnColors[c.id];
+    return nc;
+  });
+  if(columnOrder.length){
+    const map=Object.fromEntries(cols.map(c=>[c.id,c]));
+    const ordered=columnOrder.filter(id=>map[id]).map(id=>map[id]);
+    const rest=cols.filter(c=>!columnOrder.includes(c.id));
+    cols=[...ordered,...rest];
+  }
+  return cols;
+}
+function getAllTasks(){
+  const m=defaultTasks.map(t=>{const e=taskEdits[t.id];return e?{...t,...e}:t});
+  return[...m,...customTasks];
+}
+function getCol(id){return kanbanState[id]||getAllTasks().find(t=>t.id===id)?.column||'backlog'}
+function setCol(id,col){const old=kanbanState[id]||getAllTasks().find(t=>t.id===id)?.column||'backlog';kanbanState[id]=col;sv('vhi-state',kanbanState);if(old!==col){if(cardOrder[old])cardOrder[old]=cardOrder[old].filter(tid=>tid!==id);if(!cardOrder[col])cardOrder[col]=[];if(!cardOrder[col].includes(id))cardOrder[col].push(id);sv('vhi-card-order',cardOrder)}}
+function nextId(){const a=getAllTasks();return a.length?Math.max(...a.map(t=>t.id))+1:100}
+function allPhases(){const p=[];getAllTasks().forEach(t=>{if(!p.includes(t.phase))p.push(t.phase)});return p}
+function getDropIndex(list,y){const cards=[...list.querySelectorAll('.card:not(.dragging)')];for(let i=0;i<cards.length;i++){const r=cards[i].getBoundingClientRect();if(y<r.top+r.height/2)return{index:i,before:cards[i]}}return{index:cards.length,before:null}}
+function removeDropIndicators(){document.querySelectorAll('.drop-indicator').forEach(el=>el.remove())}
+
+function filterTag(tag,e){
+  activeFilter=tag;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  if(e&&e.target)e.target.classList.add('active');
+  render();
+}
+
+function toggleArchive(){archiveOpen=!archiveOpen;render()}
+function archiveTask(id){if(!archivedIds.includes(id))archivedIds.push(id);sv('vhi-archived',archivedIds);Object.keys(cardOrder).forEach(c=>{cardOrder[c]=cardOrder[c].filter(tid=>tid!==id)});sv('vhi-card-order',cardOrder);render()}
+function restoreTask(id){archivedIds=archivedIds.filter(a=>a!==id);sv('vhi-archived',archivedIds);const c=getCol(id);if(!cardOrder[c])cardOrder[c]=[];if(!cardOrder[c].includes(id))cardOrder[c].push(id);sv('vhi-card-order',cardOrder);render()}
+function deleteArchivedTask(id){
+  archivedIds=archivedIds.filter(a=>a!==id);
+  customTasks=customTasks.filter(t=>t.id!==id);
+  delete taskEdits[id];
+  Object.keys(cardOrder).forEach(c=>{cardOrder[c]=cardOrder[c].filter(tid=>tid!==id)});
+  sv('vhi-archived',archivedIds);sv('vhi-custom-tasks',customTasks);sv('vhi-task-edits',taskEdits);sv('vhi-card-order',cardOrder);
+  render();
+}
+
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open')}
+
+function openAddCardModal(targetCol){
+  const ph=allPhases(),cols=getAllColumns();
+  document.getElementById('modalContent').innerHTML=`
+    <h2>Add Card</h2>
+    <label>Title</label><input type="text" id="mcTitle" placeholder="Task title">
+    <label>Description</label><textarea id="mcDesc" placeholder="Details..."></textarea>
+    <label>Tags</label>
+    <div class="tag-toggles">${ALL_TAGS.map(t=>`<button class="tag-toggle" data-tag="${t}" onclick="this.classList.toggle('active')">${t}</button>`).join('')}</div>
+    <label>Priority</label>
+    <select id="mcPri"><option value="high">High</option><option value="med" selected>Medium</option><option value="low">Low</option></select>
+    <label>Phase / Milestone</label>
+    <select id="mcPhase">${ph.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('')}<option value="__new">+ New phase...</option></select>
+    <div id="newPW" style="display:none"><input type="text" id="mcNewPh" placeholder="New phase name"></div>
+    <label>Column</label>
+    <select id="mcCol">${cols.map(c=>`<option value="${c.id}"${c.id===targetCol?' selected':''}>${esc(c.label)}</option>`).join('')}</select>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" onclick="closeModal()">Cancel</button>
+      <button class="modal-btn primary" onclick="submitNewCard()">Add Card</button>
+    </div>`;
+  document.getElementById('mcPhase').onchange=e=>{document.getElementById('newPW').style.display=e.target.value==='__new'?'block':'none'};
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function submitNewCard(){
+  const title=document.getElementById('mcTitle').value.trim();if(!title)return;
+  const tags=[...document.querySelectorAll('.tag-toggle.active')].map(b=>b.dataset.tag);
+  let phase=document.getElementById('mcPhase').value;
+  if(phase==='__new')phase=document.getElementById('mcNewPh').value.trim()||'Uncategorized';
+  customTasks.push({id:nextId(),title,desc:document.getElementById('mcDesc').value.trim(),tags,priority:document.getElementById('mcPri').value,phase,column:document.getElementById('mcCol').value});
+  sv('vhi-custom-tasks',customTasks);closeModal();render();
+}
+
+function openEditCardModal(tid){
+  const task=getAllTasks().find(t=>t.id===tid);if(!task)return;
+  const ph=allPhases(),cols=getAllColumns(),curCol=getCol(tid);
+  document.getElementById('modalContent').innerHTML=`
+    <h2>Edit Card</h2>
+    <label>Title</label><input type="text" id="meTitle" value="${esc(task.title)}">
+    <label>Description</label><textarea id="meDesc">${esc(task.desc)}</textarea>
+    <label>Tags</label>
+    <div class="tag-toggles">${ALL_TAGS.map(t=>`<button class="tag-toggle${task.tags.includes(t)?' active':''}" data-tag="${t}" onclick="this.classList.toggle('active')">${t}</button>`).join('')}</div>
+    <label>Priority</label>
+    <select id="mePri"><option value="high"${task.priority==='high'?' selected':''}>High</option><option value="med"${task.priority==='med'?' selected':''}>Medium</option><option value="low"${task.priority==='low'?' selected':''}>Low</option></select>
+    <label>Phase / Milestone</label>
+    <select id="mePhase">${ph.map(p=>`<option value="${esc(p)}"${p===task.phase?' selected':''}>${esc(p)}</option>`).join('')}<option value="__rename">✎ Rename current phase...</option><option value="__new">+ New phase...</option></select>
+    <div id="editPW" style="display:none"><input type="text" id="meNewPh" placeholder="New phase name"></div>
+    <div id="editPRen" style="display:none"><input type="text" id="meRenPh" placeholder="Rename phase to..."></div>
+    <label>Column</label>
+    <select id="meCol">${cols.map(c=>`<option value="${c.id}"${c.id===curCol?' selected':''}>${esc(c.label)}</option>`).join('')}</select>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" onclick="closeModal()">Cancel</button>
+      <button class="modal-btn primary" onclick="submitEditCard(${tid})">Save</button>
+    </div>`;
+  document.getElementById('mePhase').onchange=e=>{
+    const v=e.target.value;
+    document.getElementById('editPW').style.display=v==='__new'?'block':'none';
+    document.getElementById('editPRen').style.display=v==='__rename'?'block':'none';
+    if(v==='__rename'){const i=document.getElementById('meRenPh');i.value=task.phase;i.focus();i.select()}
+  };
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function submitEditCard(tid){
+  const title=document.getElementById('meTitle').value.trim();if(!title)return;
+  const tags=[...document.querySelectorAll('.tag-toggle.active')].map(b=>b.dataset.tag);
+  let phase=document.getElementById('mePhase').value;
+  const task=getAllTasks().find(t=>t.id===tid);
+  if(phase==='__new')phase=document.getElementById('meNewPh').value.trim()||'Uncategorized';
+  else if(phase==='__rename'){
+    const nw=document.getElementById('meRenPh').value.trim();
+    if(nw&&task&&nw!==task.phase&&!allPhases().filter(p=>p!==task.phase).includes(nw)){
+      applyPhaseRename(task.phase,nw);phase=nw;
+    }else phase=task?task.phase:'Uncategorized';
+  }
+  const col=document.getElementById('meCol').value;
+  const edits={title,desc:document.getElementById('meDesc').value.trim(),tags,priority:document.getElementById('mePri').value,phase};
+  const custom=customTasks.find(t=>t.id===tid);
+  if(custom){Object.assign(custom,edits,{column:col});sv('vhi-custom-tasks',customTasks)}
+  else{taskEdits[tid]=edits;sv('vhi-task-edits',taskEdits)}
+  setCol(tid,col);closeModal();render();
+}
+
+function openAddColumnModal(){
+  document.getElementById('modalContent').innerHTML=`
+    <h2>Add Category</h2>
+    <label>Name</label><input type="text" id="mcColName" placeholder="Column name">
+    <label>Color</label>
+    <div class="color-swatches">${SWATCHES.map((c,i)=>`<div class="color-swatch${i===0?' active':''}" style="background:${c}" data-color="${c}" onclick="selSwatch(this)"></div>`).join('')}</div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" onclick="closeModal()">Cancel</button>
+      <button class="modal-btn primary" onclick="submitNewColumn()">Add</button>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function selSwatch(el){el.parentElement.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('active'));el.classList.add('active')}
+function submitNewColumn(){
+  const name=document.getElementById('mcColName').value.trim();if(!name)return;
+  const id=name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+  if(getAllColumns().some(c=>c.id===id)){alert('Column already exists');return}
+  const color=document.querySelector('.color-swatch.active')?.dataset.color||'#3f3f46';
+  if(deletedColumns.includes(id)){
+    // Restore a previously deleted default column with the chosen name/color
+    deletedColumns=deletedColumns.filter(x=>x!==id);sv('vhi-deleted-columns',deletedColumns);
+    columnRenames[id]=name;sv('vhi-column-renames',columnRenames);
+    columnColors[id]=color;sv('vhi-column-colors',columnColors);
+    closeModal();render();return;
+  }
+  customColumns.push({id,label:name,color});sv('vhi-custom-columns',customColumns);closeModal();render();
+}
+function deleteColumn(cid){
+  const cols=getAllColumns();
+  if(cols.length<=1){alert('Cannot delete the last column.');return}
+  const col=cols.find(c=>c.id===cid);if(!col)return;
+  const fallback=cols.find(c=>c.id!==cid);
+  if(!confirm(`Delete "${col.label}"? Cards move to "${fallback.label}".`))return;
+  getAllTasks().forEach(t=>{if(getCol(t.id)===cid)setCol(t.id,fallback.id)});
+  delete cardOrder[cid];sv('vhi-card-order',cardOrder);
+  if(customColumns.some(c=>c.id===cid)){
+    customColumns=customColumns.filter(c=>c.id!==cid);sv('vhi-custom-columns',customColumns);
+  }else{
+    if(!deletedColumns.includes(cid))deletedColumns.push(cid);
+    sv('vhi-deleted-columns',deletedColumns);
+  }
+  render();
+}
+function changeColumnColor(colId,evt){
+  evt.stopPropagation();
+  document.querySelectorAll('.color-picker-pop').forEach(p=>p.remove());
+  const col=getAllColumns().find(c=>c.id===colId);if(!col)return;
+  const pop=document.createElement('div');pop.className='color-picker-pop';
+  pop.innerHTML=SWATCHES.map(c=>`<div class="color-swatch${c===col.color?' active':''}" style="background:${c}" data-color="${c}"></div>`).join('');
+  document.body.appendChild(pop);
+  const r=evt.currentTarget.getBoundingClientRect();
+  pop.style.left=Math.min(r.left,window.innerWidth-pop.offsetWidth-8)+'px';
+  pop.style.top=(r.bottom+6)+'px';
+  pop.querySelectorAll('.color-swatch').forEach(s=>s.onclick=ev=>{
+    ev.stopPropagation();
+    const newColor=s.dataset.color;
+    const isCust=customColumns.find(c=>c.id===colId);
+    if(isCust){isCust.color=newColor;sv('vhi-custom-columns',customColumns)}
+    else{columnColors[colId]=newColor;sv('vhi-column-colors',columnColors)}
+    pop.remove();render();
+  });
+  setTimeout(()=>{
+    const close=ev=>{if(!pop.contains(ev.target)){pop.remove();document.removeEventListener('click',close,true)}};
+    document.addEventListener('click',close,true);
+  },0);
+}
+function renameColumn(colId){
+  const hdr=document.querySelector(`.column[data-col-id="${colId}"] .column-label`);if(!hdr)return;
+  const col=getAllColumns().find(c=>c.id===colId);if(!col)return;
+  const cur=col.label;
+  const inp=document.createElement('input');inp.type='text';inp.className='column-label-edit';inp.value=cur;
+  hdr.replaceWith(inp);inp.focus();inp.select();
+  const fin=()=>{
+    const nw=inp.value.trim()||cur;
+    const isCust=customColumns.find(c=>c.id===colId);
+    if(isCust){isCust.label=nw;sv('vhi-custom-columns',customColumns)}
+    else{columnRenames[colId]=nw;sv('vhi-column-renames',columnRenames)}
+    render();
+  };
+  inp.onblur=fin;
+  inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();fin()}if(e.key==='Escape'){render()}};
+}
+
+function renderBoardTitle(){
+  document.getElementById('titleWrap').innerHTML=`
+    <span class="board-title" ondblclick="startEdit('title')">${esc(boardName.title)}</span>
+    <span class="board-subtitle" ondblclick="startEdit('subtitle')">${esc(boardName.subtitle)}</span>`;
+}
+function startEdit(field){
+  const el=document.querySelector(field==='title'?'.board-title':'.board-subtitle');
+  const cur=boardName[field];
+  const inp=document.createElement('input');inp.type='text';inp.className='inline-edit';inp.value=cur;
+  inp.style.fontWeight=field==='title'?'600':'400';
+  el.replaceWith(inp);inp.focus();inp.select();
+  const fin=()=>{boardName[field]=inp.value.trim()||cur;sv('vhi-board-name',boardName);renderBoardTitle()};
+  inp.onblur=fin;
+  inp.onkeydown=e=>{if(e.key==='Enter')fin();if(e.key==='Escape'){boardName[field]=cur;renderBoardTitle()}};
+}
+function renamePhase(oldName){
+  const divs=document.querySelectorAll('.phase-divider');
+  let target=null;divs.forEach(d=>{if(d.textContent===oldName)target=d});if(!target)return;
+  const inp=document.createElement('input');inp.type='text';inp.className='inline-edit';inp.value=oldName;
+  inp.style.fontSize='10px';inp.style.fontWeight='600';inp.style.letterSpacing='0.04em';inp.style.width='100%';
+  target.textContent='';target.appendChild(inp);inp.focus();inp.select();
+  const fin=()=>{const nw=inp.value.trim();if(nw&&nw!==oldName&&!allPhases().filter(p=>p!==oldName).includes(nw)){applyPhaseRename(oldName,nw)}else{render()}};
+  inp.onblur=fin;
+  inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();fin()}if(e.key==='Escape'){render()}};
+}
+function applyPhaseRename(oldName,newName){
+  defaultTasks.forEach(t=>{if(t.phase===oldName||(taskEdits[t.id]&&taskEdits[t.id].phase===oldName)){if(!taskEdits[t.id])taskEdits[t.id]={};taskEdits[t.id].phase=newName}});
+  customTasks.forEach(t=>{if(t.phase===oldName)t.phase=newName});
+  sv('vhi-task-edits',taskEdits);sv('vhi-custom-tasks',customTasks);render();
+}
+
+function render(){
+  renderBoardTitle();
+  const board=document.getElementById('board');board.innerHTML='';
+  const cols=getAllColumns();
+  const tasks=getAllTasks().filter(t=>!archivedIds.includes(t.id));
+
+  const counts={};cols.forEach(c=>counts[c.id]=0);let total=0;
+  tasks.forEach(t=>{const col=getCol(t.id);if(activeFilter==='all'||t.tags.includes(activeFilter)){counts[col]=(counts[col]||0)+1;total++}});
+  const done=counts['done']||0;const pct=total?Math.round(done/total*100):0;
+  document.getElementById('stats').innerHTML=`<span>${total} tasks</span> · <span>${done} done</span> · <span>${pct}% complete</span><span class="sync-status" id="syncStatus"></span>`;
+
+  const ab=document.getElementById('archiveToggle');
+  ab.innerHTML=archivedIds.length?`Archive <span class="badge">${archivedIds.length}</span>`:'Archive';
+
+  const ap=document.getElementById('archivePanel');
+  ap.className='archive-panel'+(archiveOpen?' open':'');
+  if(archiveOpen){
+    const arch=getAllTasks().filter(t=>archivedIds.includes(t.id));
+    ap.innerHTML=`<h3>Archived Cards (${arch.length})</h3>`+
+      (arch.length===0?'<div style="font-size:11px;color:var(--text-muted)">No archived cards</div>':
+      arch.map(t=>`<div class="archive-card">
+        <div style="width:3px;min-height:36px;border-radius:2px;flex-shrink:0;background:${t.priority==='high'?'var(--priority-high)':t.priority==='med'?'var(--priority-med)':'var(--priority-low)'}"></div>
+        <div class="archive-card-body">
+          <div class="archive-card-title">${esc(t.title)}</div>
+          <div class="archive-card-desc">${esc(t.desc)}</div>
+          <div class="archive-card-tags">${t.tags.map(tg=>`<span class="tag tag-${tg}">${tg}</span>`).join('')}</div>
+        </div>
+        <div class="archive-card-actions">
+          <button class="archive-btn" onclick="restoreTask(${t.id})">Restore</button>
+          <button class="archive-btn danger" onclick="deleteArchivedTask(${t.id})">Delete</button>
+        </div>
+      </div>`).join(''));
+  }
+
+  let dragColId=null;
+  cols.forEach((col,ci)=>{
+    // Column drop zone before each column
+    const dropZone=document.createElement('div');dropZone.className='column-drop-zone';dropZone.dataset.dropIndex=ci;
+    dropZone.addEventListener('dragover',e=>{if(!e.dataTransfer.types.includes('col-id'))return;e.preventDefault();dropZone.classList.add('active')});
+    dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('active'));
+    dropZone.addEventListener('drop',e=>{
+      e.preventDefault();dropZone.classList.remove('active');
+      const srcId=e.dataTransfer.getData('col-id');if(!srcId)return;
+      const curOrder=getAllColumns().map(c=>c.id);
+      const from=curOrder.indexOf(srcId);if(from===-1)return;
+      curOrder.splice(from,1);
+      let to=ci;if(from<ci)to--;
+      curOrder.splice(to,0,srcId);
+      columnOrder=curOrder;sv('vhi-column-order',columnOrder);render();
+    });
+    board.appendChild(dropZone);
+
+    const colEl=document.createElement('div');colEl.className='column';colEl.dataset.colId=col.id;
+    colEl.draggable=true;
+    colEl.addEventListener('dragstart',e=>{
+      if(e.target.closest('.card')||e.target.closest('.card-list'))return;
+      e.dataTransfer.setData('col-id',col.id);e.dataTransfer.effectAllowed='move';
+      colEl.classList.add('col-dragging');dragColId=col.id;
+    });
+    colEl.addEventListener('dragend',()=>{colEl.classList.remove('col-dragging');dragColId=null;document.querySelectorAll('.column-drop-zone').forEach(z=>z.classList.remove('active'))});
+    const colTasks=tasks.filter(t=>{
+      const inCol=getCol(t.id)===col.id;
+      const match=activeFilter==='all'||t.tags.includes(activeFilter);
+      return inCol&&match;
+    });
+    colEl.innerHTML=`<div class="column-header">
+      <div class="column-title">
+        <span class="column-drag-handle" title="Drag to reorder">⠿</span>
+        <div class="column-dot" style="background:${col.color}" onclick="changeColumnColor('${col.id}',event)" title="Click to change color"></div><span class="column-label" ondblclick="renameColumn('${col.id}')" title="Double-click to rename">${esc(col.label)}</span>
+        <button class="column-del" onclick="deleteColumn('${col.id}')" title="Delete">×</button>
+      </div>
+      <div class="column-count">${colTasks.length}</div>
+    </div>`;
+    const list=document.createElement('div');list.className='card-list';list.dataset.column=col.id;
+    list.addEventListener('dragover',e=>{
+      if(e.dataTransfer.types.includes('col-id'))return;
+      e.preventDefault();list.classList.add('drag-over');removeDropIndicators();
+      const{before}=getDropIndex(list,e.clientY);
+      const ind=document.createElement('div');ind.className='drop-indicator';
+      if(before)list.insertBefore(ind,before);else list.appendChild(ind);
+    });
+    list.addEventListener('dragleave',e=>{if(!list.contains(e.relatedTarget)){list.classList.remove('drag-over');removeDropIndicators()}});
+    list.addEventListener('drop',e=>{
+      if(e.dataTransfer.types.includes('col-id'))return;
+      e.preventDefault();list.classList.remove('drag-over');removeDropIndicators();
+      const tid=parseInt(e.dataTransfer.getData('text/plain'));
+      const{index}=getDropIndex(list,e.clientY);
+      const visibleIds=[...list.querySelectorAll('.card:not(.dragging)')].map(c=>parseInt(c.dataset.id));
+      const sourceCol=getCol(tid);
+      if(cardOrder[sourceCol])cardOrder[sourceCol]=cardOrder[sourceCol].filter(id=>id!==tid);
+      let targetOrder=visibleIds.filter(id=>id!==tid);
+      targetOrder.splice(index,0,tid);
+      const hiddenInCol=(cardOrder[col.id]||[]).filter(id=>!targetOrder.includes(id)&&getAllTasks().some(t=>t.id===id&&!archivedIds.includes(id)));
+      cardOrder[col.id]=[...targetOrder,...hiddenInCol];
+      setCol(tid,col.id);sv('vhi-card-order',cardOrder);render();
+    });
+
+    const order=cardOrder[col.id]||[];
+    colTasks.sort((a,b)=>{const ai=order.indexOf(a.id),bi=order.indexOf(b.id);if(ai===-1&&bi===-1)return 0;if(ai===-1)return 1;if(bi===-1)return -1;return ai-bi});
+    let lastPhase=null;
+    colTasks.forEach(task=>{
+      if(task.phase!==lastPhase){
+        const div=document.createElement('div');div.className='phase-divider';div.textContent=task.phase;div.title='Double-click to rename';div.style.cursor='pointer';div.ondblclick=function(){renamePhase(task.phase)};list.appendChild(div);
+        lastPhase=task.phase;
+      }
+      const card=document.createElement('div');card.className='card';card.draggable=true;card.dataset.id=task.id;
+      card.addEventListener('dragstart',e=>{e.stopPropagation();e.dataTransfer.setData('text/plain',task.id);card.classList.add('dragging')});
+      card.addEventListener('dragend',()=>{card.classList.remove('dragging');removeDropIndicators()});
+      const pc=task.priority==='high'?'var(--priority-high)':task.priority==='med'?'var(--priority-med)':'var(--priority-low)';
+      card.innerHTML=`
+        <div class="card-priority" style="background:${pc}"></div>
+        <div class="card-actions">
+          <button class="card-action-btn" onclick="event.stopPropagation();openEditCardModal(${task.id})" title="Edit">✎</button>
+          <button class="card-action-btn danger" onclick="event.stopPropagation();archiveTask(${task.id})" title="Archive">×</button>
+        </div>
+        <div class="card-title">${esc(task.title)}</div>
+        <div class="card-desc">${esc(task.desc)}</div>
+        <div class="card-footer"><div class="card-tags">${task.tags.map(t=>`<span class="tag tag-${t}">${t}</span>`).join('')}</div></div>`;
+      list.appendChild(card);
+    });
+
+    if(colTasks.length===0){const e=document.createElement('div');e.style.cssText='padding:24px 12px;text-align:center;color:var(--text-muted);font-size:11px;';e.textContent='Drag cards here';list.appendChild(e)}
+    const ab=document.createElement('button');ab.className='add-card-btn';ab.textContent='+ Add Card';ab.onclick=()=>openAddCardModal(col.id);
+    colEl.appendChild(list);colEl.appendChild(ab);board.appendChild(colEl);
+  });
+  // Trailing drop zone for moving columns to the end
+  const lastDrop=document.createElement('div');lastDrop.className='column-drop-zone';lastDrop.dataset.dropIndex=cols.length;
+  lastDrop.addEventListener('dragover',e=>{if(!e.dataTransfer.types.includes('col-id'))return;e.preventDefault();lastDrop.classList.add('active')});
+  lastDrop.addEventListener('dragleave',()=>lastDrop.classList.remove('active'));
+  lastDrop.addEventListener('drop',e=>{
+    e.preventDefault();lastDrop.classList.remove('active');
+    const srcId=e.dataTransfer.getData('col-id');if(!srcId)return;
+    const curOrder=getAllColumns().map(c=>c.id);
+    const from=curOrder.indexOf(srcId);if(from===-1)return;
+    curOrder.splice(from,1);curOrder.push(srcId);
+    columnOrder=curOrder;sv('vhi-column-order',columnOrder);render();
+  });
+  board.appendChild(lastDrop);
+}
+
+const STORAGE_KEYS=['vhi-state','vhi-custom-tasks','vhi-custom-columns','vhi-archived','vhi-task-edits','vhi-board-name','vhi-card-order','vhi-column-order','vhi-column-renames','vhi-column-colors','vhi-deleted-columns'];
+
+function exportBoard(){
+  const data={};
+  STORAGE_KEYS.forEach(k=>{const v=localStorage.getItem(k);if(v!==null)data[k]=JSON.parse(v)});
+  data._exportDate=new Date().toISOString();
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`vhi-kanban-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();URL.revokeObjectURL(a.href);
+}
+
+function importBoard(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const data=JSON.parse(ev.target.result);
+      const valid=STORAGE_KEYS.some(k=>k in data);
+      if(!valid){alert('Not a valid Vampire Hunter Intern Kanban backup.');return}
+      if(!confirm('Replace current board state with backup?\nThis will overwrite any current changes.'))return;
+      STORAGE_KEYS.forEach(k=>{if(k in data)localStorage.setItem(k,JSON.stringify(data[k]));else localStorage.removeItem(k)});
+      kanbanState=ld('vhi-state')||{};
+      customTasks=ld('vhi-custom-tasks')||[];
+      customColumns=ld('vhi-custom-columns')||[];
+      archivedIds=ld('vhi-archived')||[];
+      taskEdits=ld('vhi-task-edits')||{};
+      boardName=ld('vhi-board-name')||{title:"Vampire Hunter Intern",subtitle:"— Exit 8-like"};
+      cardOrder=ld('vhi-card-order')||{};
+      columnOrder=ld('vhi-column-order')||[];
+      columnRenames=ld('vhi-column-renames')||{};
+      columnColors=ld('vhi-column-colors')||{};
+      deletedColumns=ld('vhi-deleted-columns')||[];
+      render();
+    }catch(err){alert('Failed to read backup: '+err.message)}
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+
+// --- Gist Cloud Sync ---
+function setSyncStatus(state,msg){
+  const el=document.getElementById('syncStatus');
+  if(!el)return;
+  const dot=state==='off'?'':'<span class="sync-dot '+state+'"></span> ';
+  el.innerHTML=dot+(msg||'');
+}
+
+async function syncToGist(){
+  if(!_gistToken||!_gistId)return;
+  setSyncStatus('saving','syncing...');
+  const data={};
+  STORAGE_KEYS.forEach(k=>{const v=localStorage.getItem(k);if(v!==null)data[k]=JSON.parse(v)});
+  data._syncDate=new Date().toISOString();
+  try{
+    const r=await fetch('https://api.github.com/gists/'+_gistId,{
+      method:'PATCH',
+      headers:{'Authorization':'Bearer '+_gistToken,'Accept':'application/vnd.github+json','Content-Type':'application/json'},
+      body:JSON.stringify({files:{'vhi-kanban-backup.json':{content:JSON.stringify(data,null,2)}}})
+    });
+    if(!r.ok)throw new Error(r.status+' '+r.statusText);
+    localStorage.setItem('vhi-last-sync',data._syncDate);
+    setSyncStatus('ok','saved');
+    setTimeout(()=>setSyncStatus('ok','synced'),2000);
+  }catch(e){
+    console.error('Gist sync failed:',e);
+    setSyncStatus('err','sync failed');
+  }
+}
+
+async function loadFromGist(){
+  if(!_gistToken||!_gistId)return false;
+  setSyncStatus('saving','loading...');
+  try{
+    const r=await fetch('https://api.github.com/gists/'+_gistId+'?t='+Date.now(),{
+      headers:{'Authorization':'Bearer '+_gistToken,'Accept':'application/vnd.github+json'}
+    });
+    if(!r.ok)throw new Error(r.status+' '+r.statusText);
+    const gist=await r.json();
+    const file=gist.files['vhi-kanban-backup.json'];
+    if(!file){setSyncStatus('err','no backup in gist');return false}
+    const data=JSON.parse(file.content);
+    STORAGE_KEYS.forEach(k=>{if(k in data)localStorage.setItem(k,JSON.stringify(data[k]));else localStorage.removeItem(k)});
+    reloadState();
+    setSyncStatus('ok','restored from cloud');
+    return true;
+  }catch(e){
+    console.error('Gist load failed:',e);
+    setSyncStatus('err','load failed');
+    return false;
+  }
+}
+
+function reloadState(){
+  kanbanState=ld('vhi-state')||{};
+  customTasks=ld('vhi-custom-tasks')||[];
+  customColumns=ld('vhi-custom-columns')||[];
+  archivedIds=ld('vhi-archived')||[];
+  taskEdits=ld('vhi-task-edits')||{};
+  boardName=ld('vhi-board-name')||{title:"Vampire Hunter Intern",subtitle:"\u2014 Exit 8-like"};
+  cardOrder=ld('vhi-card-order')||{};
+  columnOrder=ld('vhi-column-order')||[];
+  columnRenames=ld('vhi-column-renames')||{};
+  columnColors=ld('vhi-column-colors')||{};
+  deletedColumns=ld('vhi-deleted-columns')||[];
+}
+
+function onSyncClick(){
+  if(_gistToken&&_gistId){openSyncMenu()}
+  else{openSyncSetup()}
+}
+
+function openSyncSetup(){
+  document.getElementById('modalContent').innerHTML=`
+    <div class="sync-setup-modal">
+    <h2>Cloud Sync Setup</h2>
+    <p style="font-size:12px;color:var(--text-dim);margin-bottom:12px;">Saves your board to a private GitHub Gist automatically.</p>
+    <label>GitHub Personal Access Token <span style="font-size:10px;color:var(--text-muted)">(gist scope)</span></label>
+    <input type="password" id="gistTokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+    <p style="font-size:10px;color:var(--text-muted);margin-bottom:16px;">Create one at github.com/settings/tokens &mdash; only needs the <strong>gist</strong> scope.</p>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" onclick="closeModal()">Cancel</button>
+      <button class="modal-btn primary" onclick="submitSyncSetup()">Connect</button>
+    </div>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+async function submitSyncSetup(){
+  const token=document.getElementById('gistTokenInput').value.trim();
+  if(!token)return;
+  const actions=document.getElementById('modalContent').querySelector('.modal-actions');
+  actions.innerHTML='<span style="font-size:12px;color:var(--text-dim)">Looking for existing backup...</span>';
+  try{
+    const listR=await fetch('https://api.github.com/gists?per_page=100',{
+      headers:{'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json'}
+    });
+    if(!listR.ok)throw new Error('Failed to list gists: '+listR.statusText);
+    const gists=await listR.json();
+    const existing=gists.find(g=>g.description==='Vampire Hunter Intern Kanban Backup'&&g.files['vhi-kanban-backup.json']);
+    if(existing){
+      _gistToken=token;_gistId=existing.id;
+      localStorage.setItem('vhi-gist-token',JSON.stringify(token));
+      localStorage.setItem('vhi-gist-id',JSON.stringify(existing.id));
+      closeModal();updateSyncBtn();
+      setSyncStatus('ok','connected (existing gist)');
+      const hasData=STORAGE_KEYS.some(k=>localStorage.getItem(k)!==null);
+      if(!hasData||confirm('Found existing cloud backup. Restore it now?')){
+        await loadFromGist();render();
+      }
+      return;
+    }
+    actions.innerHTML='<span style="font-size:12px;color:var(--text-dim)">Creating new backup...</span>';
+    const data={};
+    STORAGE_KEYS.forEach(k=>{const v=localStorage.getItem(k);if(v!==null)data[k]=JSON.parse(v)});
+    data._syncDate=new Date().toISOString();
+    const r=await fetch('https://api.github.com/gists',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','Content-Type':'application/json'},
+      body:JSON.stringify({description:'Vampire Hunter Intern Kanban Backup','public':false,files:{'vhi-kanban-backup.json':{content:JSON.stringify(data,null,2)}}})
+    });
+    if(!r.ok){const e=await r.json();throw new Error(e.message||r.statusText)}
+    const gist=await r.json();
+    _gistToken=token;_gistId=gist.id;
+    localStorage.setItem('vhi-gist-token',JSON.stringify(token));
+    localStorage.setItem('vhi-gist-id',JSON.stringify(gist.id));
+    closeModal();updateSyncBtn();
+    setSyncStatus('ok','connected (new gist)');
+  }catch(e){
+    alert('Failed to connect: '+e.message);
+    actions.innerHTML='<button class="modal-btn secondary" onclick="closeModal()">Cancel</button><button class="modal-btn primary" onclick="submitSyncSetup()">Retry</button>';
+  }
+}
+
+function openSyncMenu(){
+  document.getElementById('modalContent').innerHTML=`
+    <h2>Cloud Sync</h2>
+    <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px;">Connected to GitHub Gist.</p>
+    <div class="modal-actions" style="flex-direction:column;gap:6px;">
+      <button class="modal-btn primary" style="width:100%" onclick="closeModal();syncToGist()">Sync Now</button>
+      <button class="modal-btn secondary" style="width:100%" onclick="closeModal();if(confirm('Replace local board with cloud backup?'))loadFromGist().then(()=>render())">Restore from Cloud</button>
+      <button class="modal-btn secondary" style="width:100%;color:#ef4444" onclick="disconnectSync()">Disconnect</button>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function disconnectSync(){
+  if(!confirm('Disconnect cloud sync? Your data stays in the gist.'))return;
+  _gistToken=null;_gistId=null;
+  localStorage.removeItem('vhi-gist-token');
+  localStorage.removeItem('vhi-gist-id');
+  closeModal();updateSyncBtn();setSyncStatus('off','');
+}
+
+function updateSyncBtn(){
+  const btn=document.getElementById('syncBtn');
+  btn.classList.toggle('active',!!(_gistToken&&_gistId));
+}
+
+// Init sync state
+updateSyncBtn();
+render();
+
+if(_gistToken&&_gistId){
+  (async function(){
+    const hasData=STORAGE_KEYS.some(k=>localStorage.getItem(k)!==null);
+    if(!hasData){
+      setSyncStatus('saving','restoring from cloud...');
+      const ok=await loadFromGist();
+      if(ok)render();
+      return;
+    }
+    setSyncStatus('saving','checking cloud...');
+    try{
+      const r=await fetch('https://api.github.com/gists/'+_gistId+'?t='+Date.now(),{
+        headers:{'Authorization':'Bearer '+_gistToken,'Accept':'application/vnd.github+json'}
+      });
+      if(!r.ok)throw new Error(r.status);
+      const gist=await r.json();
+      const file=gist.files['vhi-kanban-backup.json'];
+      if(!file){setSyncStatus('ok','synced');return}
+      const cloudData=JSON.parse(file.content);
+      const cloudTime=cloudData._syncDate?new Date(cloudData._syncDate).getTime():0;
+      const localTime=localStorage.getItem('vhi-last-sync')?new Date(localStorage.getItem('vhi-last-sync')).getTime():0;
+      if(cloudTime>localTime){
+        setSyncStatus('saving','newer cloud version found...');
+        STORAGE_KEYS.forEach(k=>{if(k in cloudData)localStorage.setItem(k,JSON.stringify(cloudData[k]));else localStorage.removeItem(k)});
+        localStorage.setItem('vhi-last-sync',cloudData._syncDate);
+        reloadState();render();
+        setSyncStatus('ok','restored from cloud');
+      }else{
+        setSyncStatus('ok','synced');
+      }
+    }catch(e){
+      console.error('Sync check failed:',e);
+      setSyncStatus('err','sync check failed');
+    }
+  })();
+}
+</script>
+</body>
+</html>
