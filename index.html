@@ -147,8 +147,20 @@
   .column.col-dragging { opacity: 0.4; }
   .column-drop-zone {
     min-width: 4px; flex-shrink: 0; border-radius: 4px; transition: all 0.15s; align-self: stretch;
+    position: relative;
   }
   .column-drop-zone.active { background: var(--accent); min-width: 4px; box-shadow: 0 0 8px var(--accent); }
+  .col-insert-btn {
+    position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    width: 22px; height: 22px; border-radius: 50%; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text-dim); font-size: 15px; line-height: 1; cursor: pointer;
+    opacity: 0; transition: opacity 0.15s, border-color 0.15s, color 0.15s; z-index: 5;
+  }
+  .column-drop-zone:hover .col-insert-btn, .col-insert-btn:hover {
+    opacity: 1; border-color: var(--accent); color: var(--accent);
+  }
   .column-drag-handle {
     cursor: grab; padding: 0 3px; color: var(--text-muted); font-size: 10px;
     opacity: 0; transition: opacity 0.15s; user-select: none;
@@ -868,7 +880,9 @@ function submitEditCard(tid){
   setCol(tid,col);closeModal();render();
 }
 
-function openAddColumnModal(){
+let _colInsertIndex=null;
+function openAddColumnModal(insertIndex){
+  _colInsertIndex=(insertIndex==null?null:insertIndex);
   document.getElementById('modalContent').innerHTML=`
     <h2>Add Category</h2>
     <label>Name</label><input type="text" id="mcColName" placeholder="Column name">
@@ -891,9 +905,17 @@ function submitNewColumn(){
     deletedColumns=deletedColumns.filter(x=>x!==id);sv('vhi-deleted-columns',deletedColumns);
     columnRenames[id]=name;sv('vhi-column-renames',columnRenames);
     columnColors[id]=color;sv('vhi-column-colors',columnColors);
-    closeModal();render();return;
+    applyColumnInsert(id);closeModal();render();return;
   }
-  customColumns.push({id,label:name,color});sv('vhi-custom-columns',customColumns);closeModal();render();
+  customColumns.push({id,label:name,color});sv('vhi-custom-columns',customColumns);
+  applyColumnInsert(id);closeModal();render();
+}
+function applyColumnInsert(id){
+  if(_colInsertIndex==null)return;
+  const order=getAllColumns().map(c=>c.id).filter(x=>x!==id);
+  order.splice(Math.min(_colInsertIndex,order.length),0,id);
+  columnOrder=order;sv('vhi-column-order',columnOrder);
+  _colInsertIndex=null;
 }
 function deleteColumn(cid){
   const cols=getAllColumns();
@@ -1032,6 +1054,9 @@ function render(){
       curOrder.splice(to,0,srcId);
       columnOrder=curOrder;sv('vhi-column-order',columnOrder);render();
     });
+    const ib=document.createElement('button');ib.className='col-insert-btn';ib.textContent='+';ib.title='Insert column here';
+    ib.onclick=()=>openAddColumnModal(ci);
+    dropZone.appendChild(ib);
     board.appendChild(dropZone);
 
     const colEl=document.createElement('div');colEl.className='column';colEl.dataset.colId=col.id;
@@ -1119,6 +1144,9 @@ function render(){
     curOrder.splice(from,1);curOrder.push(srcId);
     columnOrder=curOrder;sv('vhi-column-order',columnOrder);render();
   });
+  const lastIb=document.createElement('button');lastIb.className='col-insert-btn';lastIb.textContent='+';lastIb.title='Insert column here';
+  lastIb.onclick=()=>openAddColumnModal(cols.length);
+  lastDrop.appendChild(lastIb);
   board.appendChild(lastDrop);
 }
 
